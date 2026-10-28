@@ -169,3 +169,6 @@ body.locked .app-header,body.locked section,body.locked nav,body.locked footer,b
 /* v18 - Elroq */
 #elroqGrid .cause-card{border-left-color:#4caf50}
 #elroqChips{flex-wrap:wrap;gap:.4rem}
+/* v19 - puces modèles rapides */
+.mega-chip{font-size:.78rem;padding:.5rem .8rem}
+#megaChips{border:1px dashed var(--border);border-radius:8px}
