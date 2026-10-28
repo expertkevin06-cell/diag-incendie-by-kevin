@@ -3,8 +3,10 @@
 body{font-family:'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
 #splash{position:fixed;inset:0;z-index:4000;background:linear-gradient(rgba(20,3,8,.6),rgba(20,3,8,.8)),var(--admin-bg,#3a0710) center/cover;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;transition:opacity .6s}
 #splash .logo{width:110px;height:110px;border-radius:26px;box-shadow:0 10px 34px rgba(0,0,0,.6)}
-#splash h1{color:#fff;font-size:2rem}#splash p{color:#ffd9d0}
-#splash.hidden{opacity:0;pointer-events:none}
+#splash h1{color:#fff;font-size:2rem}#splash p{color:#ffd9d0}#splash.hidden{opacity:0;pointer-events:none}
+.update-banner{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:#2e7d32;color:#fff;padding:.8rem 1.2rem;border-radius:25px;box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:5000;font-weight:600;display:none;max-width:90%}
+.update-banner.show{display:block}
+.feed-info{margin-top:.5rem;font-size:.85rem;font-weight:600}
 .app-header{background:linear-gradient(rgba(74,11,20,.75),rgba(74,11,20,.9)),var(--admin-bg,#8f1d2c) center 30%/cover;color:#fff;padding:2rem 1rem;text-align:center;position:sticky;top:0;z-index:1000;box-shadow:var(--shadow)}
 .header-content{display:flex;align-items:center;justify-content:center;gap:1rem}
 .header-logo{width:56px;height:56px;border-radius:12px}
