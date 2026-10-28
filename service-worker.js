@@ -1,4 +1,4 @@
-const CACHE='diag-v17',DYN='diag-dyn-v17';
+const CACHE='diag-v17b',DYN='diag-dyn-v17b';
 const CORE=['./','./index.html','./manifest.json','./css/styles.css','./js/data-v9.js','./js/shorts-db.js','./js/leaks-batt-db.js','./js/overheat-mech-db.js','./js/eu-failures-db.js','./js/vehicles-2025-db.js','./js/access-control.js','./js/search-engine.js','./js/live-search.js','./js/multi-search.js','./js/auto-update.js','./js/ui-v10.js','./js/ui-v11.js','./js/ui-v12.js','./js/ui-v13.js','./js/ui-v16.js','./js/ui-v17.js','./js/app-v9.js','./js/gemini-search.js','./images/icon.svg','./data/recalls-feed.json'];
 self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await Promise.allSettled(CORE.map(u=>c.add(u).catch(()=>null)));self.skipWaiting();})());});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&k!==DYN).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
