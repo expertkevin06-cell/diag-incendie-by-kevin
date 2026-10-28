@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v18 : base Skoda Elroq complète (36 symptômes), accès admin/tiers, recherche live, MAJ mensuelle">
+<meta name="description" content="diag-incendie-by-kevin v19 : méga-base Clio/Austral/Rafale/Koleos, 208/308/3008/5008, Duster/Bigster/Spring, Audi A1-Q8/e-tron, VW Polo-ID.7">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -21,7 +21,7 @@
 <h1>🔒 diag-incendie-by-kevin</h1>
 <p id="gateStatus">Application protégée</p>
 <label>Mot de passe admin</label>
-<input type="password" id="gatePwd" placeholder="••••••••" autocomplete="new-password">
+<input type="password" id="gatePwd" placeholder="Mot de passe" autocomplete="new-password">
 <button id="gateAdminBtn" class="btn-primary">🔑 Entrer en admin</button>
 <hr style="margin:1rem 0;border:none;border-top:1px solid #555">
 <label>Demande d’accès (nom ou prénom)</label>
@@ -30,12 +30,12 @@
 <p style="margin-top:.8rem;font-size:.8rem;opacity:.8">Notification directe sur l’APK admin (sans mail ni SMS).</p>
 </div>
 </div>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v18</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v19</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v18 • Skoda Elroq complet • Accès contrôlé • Live 24 sources • MAJ mensuelle</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v19 • Clio/Austral/Rafale/Koleos • 208-5008 • Dacia • Audi A1-Q8 • VW Polo-ID.7</p></div>
 </div></header>
 
 <section id="adminPanel" class="search-section" style="display:none;border-top:4px solid #2e7d32">
@@ -46,11 +46,12 @@
 </section>
 
 <section class="search-section garage-box">
-<h2 style="margin-top:0">🚘 Mon véhicule — tapez les premières lettres, choisissez</h2>
+<h2 style="margin-top:0">🚘 Mon véhicule — suggestions automatiques + accès rapides</h2>
+<div id="megaChips" class="main-nav" style="box-shadow:none;padding:.5rem 0;max-height:110px;overflow-y:auto"></div>
 <div class="garage-form">
-<div class="ac-wrap"><input id="gBrand2" autocomplete="off" placeholder="Marque : « ren », « ska »..."><div class="ac-box"></div></div>
-<div class="ac-wrap"><input id="gModel2" autocomplete="off" placeholder="Modèle : « r5 », « elroq »..."><div class="ac-box"></div></div>
-<div class="ac-wrap"><input id="gMotor2" autocomplete="off" placeholder="Motorisation : « bev », « 1.2 »..."><div class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gBrand2" autocomplete="off" placeholder="Marque : « ren », « audi »..."><div class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gModel2" autocomplete="off" placeholder="Modèle : « clio 5 », « id.7 », « q6 »..."><div class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gMotor2" autocomplete="off" placeholder="Motorisation : « 1.5 », « bev », « e-tech »..."><div class="ac-box"></div></div>
 <div class="ac-wrap"><input id="gPower2" autocomplete="off" placeholder="Puissance : « 96 », « 210 »..."><div class="ac-box"></div></div>
 <select id="gSub2" class="rs-btn"><option value="">Tous sous-systèmes</option><option value="elec">⚡ Électrique</option><option value="mech">⚙️ Mécanique</option><option value="belt">⛓️ Courroie</option><option value="gearbox">⚙️ Boîte</option><option value="turbo">🌀 Turbo</option><option value="egr">♻️ EGR</option><option value="dpf">🌫️ DPF/FAP/GPF</option><option value="adblue">💧 AdBlue</option><option value="adas">📡 ADAS</option><option value="camera">📷 Caméra</option><option value="charge">🔌 Charge</option><option value="range">🔋 Autonomie</option><option value="leak">🛢️ Fuite</option><option value="overheat">🌡️ Surchauffe</option><option value="fuel">⛽ Carburant/GPL</option></select>
 <button id="gBtn2" class="btn-primary">🚘 Analyser (attribution vérifiée)</button>
@@ -65,19 +66,16 @@
 </div><div id="garageReport"></div></details>
 </section>
 
-<!-- SECTION SKODA ELROQ -->
 <section class="search-section" style="border-top:4px solid #4caf50">
-<h2 style="margin-top:0">🟢 Skoda Elroq — tous symptômes & pannes (2024-2026)</h2>
-<div class="search-container" style="margin-bottom:.8rem">
-<input type="text" id="elqInput" placeholder="Symptôme : « charge lente », « 12v », « caméra », « fuite », « sifflement »...">
-</div>
+<h2 style="margin-top:0">🟢 Skoda Elroq — tous symptômes & pannes</h2>
+<div class="search-container" style="margin-bottom:.8rem"><input type="text" id="elqInput" placeholder="Symptôme : « charge lente », « 12v », « sifflement »..."></div>
 <p id="elqCount" class="ve-intro"></p>
 <div id="elroqChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
 <div class="causes-grid" id="elroqGrid"></div>
 </section>
 
 <section class="search-section"><div class="search-container">
-<input type="text" id="searchInput" placeholder="Recherche globale : « elroq charge », « renault r5 »..." autocomplete="off">
+<input type="text" id="searchInput" placeholder="Recherche globale : « clio 5 gpf », « q4 obc », « id.7 12v »..." autocomplete="off">
 <button id="searchBtn" class="btn-primary">🔍 Rechercher</button>
 <button id="geminiSearchBtn" class="btn-secondary">🤖 IA Gemini</button>
 </div><div id="searchResults"></div><div id="geminiResults"></div></section>
@@ -85,14 +83,14 @@
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🌐 Recherche LIVE : base locale + NHTSA + Rappel Conso + 24 sites</h2>
 <div class="search-container">
-<input type="text" id="liveInput" placeholder="ex : Elroq charging, MEB coolant pump...">
+<input type="text" id="liveInput" placeholder="ex : Clio 5 GPL, Q4 OBC, ID.7 battery...">
 <button id="liveBtn" class="btn-secondary">🌐 Recherche live multi-sources</button>
 </div><div id="liveResults"></div></section>
 
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🧠 Recherche expert (synonymes + scoring + facettes)</h2>
 <div class="search-container">
-<input type="text" id="xpInput" placeholder="ex : AdBlue, GPF, ISG 48V, ICCU...">
+<input type="text" id="xpInput" placeholder="ex : courroie humide, EGR, AdBlue, OBC...">
 <select id="xpEnergy" class="rs-btn" style="width:auto"><option value="">Toutes énergies</option><option value="thermal">Thermique</option><option value="ev">Électrique</option><option value="hybrid">Hybride</option><option value="lpg">GPL</option></select>
 <select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option><option value="belt">Courroie</option><option value="gearbox">Boîte</option><option value="turbo">Turbo</option><option value="egr">EGR</option><option value="dpf">DPF</option><option value="adblue">AdBlue</option><option value="adas">ADAS</option></select>
 <button id="xpBtn" class="btn-primary">🧠 Analyser</button>
@@ -144,7 +142,7 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale v18 + MAJ mensuelle + live</h3>
+<h3>💾 Base locale v19 + MAJ mensuelle + live</h3>
 <p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info"></p>
 <button id="syncNowBtn" class="btn-offline">🔄 MAJ maintenant</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
@@ -164,7 +162,7 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v18 • Elroq 36 fiches • Accès admin/tiers • 24 sources live • MAJ mensuelle</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v19 • 32 modèles rapides • 48 fiches méga-base • Elroq • Accès contrôlé • MAJ mensuelle</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
@@ -175,6 +173,7 @@
 <script src="js/eu-failures-db.js"></script>
 <script src="js/vehicles-2025-db.js"></script>
 <script src="js/elroq-db.js"></script>
+<script src="js/models-mega-db.js"></script>
 <script src="js/access-control.js"></script>
 <script src="js/search-engine.js"></script>
 <script src="js/live-search.js"></script>
@@ -189,6 +188,7 @@
 <script src="js/ui-v16.js"></script>
 <script src="js/ui-v17.js"></script>
 <script src="js/ui-v18.js"></script>
+<script src="js/ui-v19.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
