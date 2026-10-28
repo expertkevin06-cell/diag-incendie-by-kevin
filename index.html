@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v15 : autocomplétion sans faille + R5/R4 E-Tech, Elroq, Bigster, Austral, Rafale, Scenic, Symbioz">
+<meta name="description" content="diag-incendie-by-kevin v16 : recherche alias (renault r5), autocomplétion, MAJ mensuelle">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -15,19 +15,19 @@
 <title>diag-incendie-by-kevin</title>
 </head>
 <body>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v15</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v16</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v15 • Autocomplétion sans faille • R5/R4 E-Tech • Elroq • Bigster • Austral • Rafale • Scenic • Symbioz</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v16 • Recherche « renault r5 » • Autocomplétion • MAJ mensuelle</p></div>
 </div></header>
 
 <section class="search-section garage-box">
 <h2 style="margin-top:0">🚘 Mon véhicule — tapez les premières lettres, choisissez</h2>
 <div class="garage-form">
 <div class="ac-wrap"><input id="gBrand2" autocomplete="off" placeholder="Marque : « ren », « ska », « by »..."><div class="ac-box"></div></div>
-<div class="ac-wrap"><input id="gModel2" autocomplete="off" placeholder="Modèle : « 5 », « elroq », « bigster »..."><div class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gModel2" autocomplete="off" placeholder="Modèle : « r5 », « elroq », « bigster »..."><div class="ac-box"></div></div>
 <div class="ac-wrap"><input id="gMotor2" autocomplete="off" placeholder="Motorisation : « bev », « 1.2 », « e-tech »..."><div class="ac-box"></div></div>
 <div class="ac-wrap"><input id="gPower2" autocomplete="off" placeholder="Puissance : « 96 », « 145 »..."><div class="ac-box"></div></div>
 <select id="gSub2" class="rs-btn"><option value="">Tous sous-systèmes</option><option value="elec">⚡ Électrique</option><option value="mech">⚙️ Mécanique</option><option value="belt">⛓️ Courroie</option><option value="gearbox">⚙️ Boîte</option><option value="turbo">🌀 Turbo</option><option value="egr">♻️ EGR</option><option value="dpf">🌫️ DPF/FAP/GPF</option><option value="adblue">💧 AdBlue</option><option value="adas">📡 ADAS</option><option value="camera">📷 Caméra</option><option value="charge">🔌 Charge</option><option value="range">🔋 Autonomie</option><option value="leak">🛢️ Fuite</option><option value="overheat">🌡️ Surchauffe</option><option value="fuel">⛽ Carburant/GPL</option></select>
@@ -44,7 +44,7 @@
 </section>
 
 <section class="search-section"><div class="search-container">
-<input type="text" id="searchInput" placeholder="Recherche globale..." autocomplete="off">
+<input type="text" id="searchInput" placeholder="Recherche globale : « renault r5 », « mercedes w206 », « vw id.4 »..." autocomplete="off">
 <button id="searchBtn" class="btn-primary">🔍 Rechercher</button>
 <button id="geminiSearchBtn" class="btn-secondary">🤖 IA Gemini</button>
 </div><div id="searchResults"></div><div id="geminiResults"></div></section>
@@ -52,7 +52,7 @@
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🧠 Recherche expert (synonymes + scoring + facettes)</h2>
 <div class="search-container">
-<input type="text" id="xpInput" placeholder="ex : AdBlue, GPF, ISG 48V, ICCU, octovalve...">
+<input type="text" id="xpInput" placeholder="ex : AdBlue, GPF, ISG 48V, ICCU...">
 <select id="xpEnergy" class="rs-btn" style="width:auto"><option value="">Toutes énergies</option><option value="thermal">Thermique</option><option value="ev">Électrique</option><option value="hybrid">Hybride</option><option value="lpg">GPL</option></select>
 <select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option><option value="belt">Courroie</option><option value="gearbox">Boîte</option><option value="turbo">Turbo</option><option value="egr">EGR</option><option value="dpf">DPF</option><option value="adblue">AdBlue</option><option value="adas">ADAS</option></select>
 <button id="xpBtn" class="btn-primary">🧠 Analyser</button>
@@ -111,7 +111,7 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale v15 + MAJ mensuelle</h3>
+<h3>💾 Base locale v16 + MAJ mensuelle</h3>
 <p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info"></p>
 <button id="syncNowBtn" class="btn-offline">🔄 MAJ maintenant</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
@@ -131,7 +131,7 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v15 • 2024-2026 inclus • MAJ mensuelle • NFPA 921 • ASTM E2929</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v16 • alias r5/w206/id.4 • MAJ mensuelle • NFPA 921 • ASTM E2929</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
@@ -150,6 +150,7 @@
 <script src="js/ui-v11.js"></script>
 <script src="js/ui-v12.js"></script>
 <script src="js/ui-v13.js"></script>
+<script src="js/ui-v16.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
