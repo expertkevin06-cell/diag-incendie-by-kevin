@@ -1,0 +1,24 @@
+name: monthly-recalls-update
+on:
+  schedule:
+    - cron: '0 6 1 * *'   # 1er du mois, 06:00 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update-feed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Collecte NHTSA + Rappel Conso
+        run: node tools/fetch-recalls.mjs
+      - name: Commit du feed
+        run: |
+          git config user.name "recalls-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/recalls-feed.json
+          git diff --staged --quiet || git commit -m "Feed mensuel $(date +%Y-%m)"
+          git push
