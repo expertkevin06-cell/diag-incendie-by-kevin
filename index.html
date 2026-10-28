@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="diag-incendie-by-kevin : rappels et pannes origine incendie véhicules 2018-2026, formation investigation">
+<meta name="theme-color" content="#8f1d2c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="images/icon.svg">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DiagIncendie">
+<link rel="stylesheet" href="css/styles.css">
+<title>diag-incendie-by-kevin</title>
+</head>
+<body>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — base experte v8</p></div>
+
+<header class="app-header" id="appHeader"><div class="header-content">
+<img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">Rappels & pannes 2018-2026 • NFPA 921 • ASTM E2929 • NHTSA / Rappel Conso / Safety Gate</p></div>
+</div></header>
+
+<section class="search-section"><div class="search-container">
+<input type="text" id="searchInput" placeholder="Recherche globale : runaway, B+, FAP, EGR, perles..." autocomplete="off">
+<button id="searchBtn" class="btn-primary">🔍 Rechercher</button>
+<button id="geminiSearchBtn" class="btn-secondary">🤖 IA Gemini</button>
+</div><div id="searchResults"></div><div id="geminiResults"></div></section>
+
+<div id="connectionStatus" class="connection-status online"><span class="status-text">En ligne</span></div>
+
+<nav class="main-nav">
+<button class="nav-btn active" data-filter="all">Tous</button>
+<button class="nav-btn" data-filter="building">🏢 Bâtiment</button>
+<button class="nav-btn" data-filter="electrical">⚡ Électrique</button>
+<button class="nav-btn" data-filter="vehicle-thermal">🚗 Thermique</button>
+<button class="nav-btn" data-filter="vehicle-electric">🔋 VE / Hybride</button>
+<button class="nav-btn" data-filter="equipment">🧪 Chimique / GPL</button>
+</nav>
+
+<!-- RECHERCHES LOCALES PAR ÉNERGIE -->
+<section id="section-recalls">
+<h2>🚨 Rappels & pannes origine incendie 2018-2026</h2>
+<div class="recall-searches">
+<div class="rs-box"><label>🚗 Thermique</label><input id="q-thermal" placeholder="marque, modèle, moteur..."><button class="rs-btn" data-energy="thermal">Chercher</button></div>
+<div class="rs-box"><label>🔋 Électrique</label><input id="q-ev" placeholder="marque, modèle, batterie..."><button class="rs-btn" data-energy="ev">Chercher</button></div>
+<div class="rs-box"><label>🔄 Hybride</label><input id="q-hybrid" placeholder="marque, modèle, PHEV/HEV..."><button class="rs-btn" data-energy="hybrid">Chercher</button></div>
+<div class="rs-box"><label>⛽ GPL</label><input id="q-lpg" placeholder="marque, modèle, réservoir..."><button class="rs-btn" data-energy="lpg">Chercher</button></div>
+</div>
+<p id="recallStats" class="ve-intro"></p>
+<div class="causes-grid" id="recallGrid"></div>
+</section>
+
+<section><h2>🔬 Méthodologie NFPA 921</h2><div class="method-steps" id="methodSteps"></div><h3>📐 Patterns</h3><div class="patterns-grid" id="patternsGrid"></div></section>
+<section><h2>⚗️ Chimie du feu</h2><div class="tetrahedron" id="tetrahedron"></div><div class="phenomena-grid" id="phenomenaGrid"></div><div class="table-container"><table class="metal-table" id="gasTable"><thead><tr><th>Gaz</th><th>Source</th><th>Danger</th></tr></thead><tbody></tbody></table></div></section>
+<section><h2>📍 Zones du véhicule</h2><div class="ve-zones" id="vz-grid"></div></section>
+<section><h2>🎯 Origines (analyse ingénieur)</h2><p class="ve-intro">Touchez chaque bloc : mécanismes, preuves, données chiffrées, photos réelles.</p><div id="vo-grid"></div></section>
+<section><h2>🧱 Polymères & charge calorifique</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Polymère</th><th>Usages</th><th>Feu</th><th>Rôle</th></tr></thead><tbody id="vp-table"></tbody></table></div><div class="id-card" id="vf-load"></div></section>
+<section><h2>📈 Développement du feu</h2><div id="vd-stages" class="runaway-phases"></div><h3>Aéraulique</h3><div class="id-card" id="vd-vent"></div><h3>Propagation</h3><div class="id-card" id="vd-spread"></div><h3>Direction</h3><div class="id-card" id="vd-dir"></div></section>
+<section><h2>🔋 Batterie HT</h2><div id="ev-seq" class="runaway-phases"></div><div id="ev-gas"></div><div class="id-card" id="ev-trig"></div><div class="id-card" id="ev-cc"></div><div class="id-card" id="ev-chg"></div><div id="ev-reig"></div><div class="id-card" id="ev-ext"></div></section>
+<section><h2>🚗 Spécifique thermique</h2><div id="th-expert" class="runaway-details"></div></section>
+<section><h2>🗺️ Cartographie de fusion</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Matériau</th><th>T°</th><th>Interprétation</th></tr></thead><tbody id="vm-table"></tbody></table></div></section>
+<section><h2>🧑‍ Protocole véhicule</h2><div class="method-steps" id="vproto"></div></section>
+<section><h2>🚗 Thermiques détaillés</h2><h3>Moteur</h3><div class="causes-grid" id="engineCauses"></div><h3>Habitacle</h3><div class="causes-grid" id="cabinCauses"></div></section>
+<section><h2>🔋 VE expert</h2><div class="chem-grid" id="chemGrid"></div><div class="runaway-phases" id="runawayPhases"></div><div class="runaway-details" id="runawayDetails"></div><div class="causes-grid" id="evCauses"></div></section>
+<section><h2>🔄 Hybrides</h2><div id="hybridInfo"></div></section>
+<section><h2>🏢 Bâtiments</h2><div class="causes-grid" id="buildingCauses"></div><div class="propagation-grid" id="propagationGrid"></div></section>
+<section><h2>🧪 Chimique</h2><div class="table-container"><table class="metal-table" id="selfIgnitionTable"><thead><tr><th>Matériau</th><th>T°</th><th>Mécanisme</th><th>Prévention</th></tr></thead><tbody></tbody></table></div><div id="incompatibilities"></div></section>
+<section><h2>🎯 Sources de départ</h2><div class="causes-grid" id="causesGrid"></div></section>
+<section><h2>🌡️ Points de fusion</h2><div class="table-container"><table id="metalTable" class="metal-table"><thead><tr><th>Métal</th><th>°C</th><th>°F</th><th>Aspect</th></tr></thead><tbody></tbody></table></div></section>
+<section><h2>🔌 Fils (ASTM E2929)</h2><div class="analysis-grid" id="wireAnalysisGrid"></div></section>
+<section><h2>🔩 Métal</h2><div class="identification-cards" id="metalIdGrid"></div></section>
+<section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
+
+<section class="storage-info"><div class="storage-card">
+<h3>💾 Base locale v8</h3><p id="storageStatus">Init...</p>
+<button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
+<a href="tools/autodiag.html" class="btn-offline" style="display:inline-block;margin-left:.5rem;text-decoration:none">🩺 Autodiagnostic</a>
+<p id="offlineProgress"></p>
+<div class="storage-stats">
+<div class="stat"><span class="stat-label">Causes</span><span class="stat-value" id="casesCount">0</span></div>
+<div class="stat"><span class="stat-label">Rappels</span><span class="stat-value" id="recallsCount">0</span></div>
+<div class="stat"><span class="stat-label">Photos</span><span class="stat-value" id="photosCount">0</span></div>
+<div class="stat"><span class="stat-label">Métaux</span><span class="stat-value" id="metalsCount">0</span></div>
+</div></div>
+<div class="storage-card admin-card">
+<h3>🛠️ ADMIN — fond d'écran personnalisé</h3>
+<input type="file" id="adminBg" accept="image/*">
+<button id="adminBgApply" class="btn-offline">Appliquer</button>
+<button id="adminBgReset" class="btn-offline">Réinitialiser</button>
+<p id="adminMsg"></p>
+</div></section>
+
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v8 • NHTSA • Rappel Conso • Safety Gate • SAMR • KBA • NFPA 921 • ASTM E2929</p></footer>
+
+<div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
+
+<script src="js/database.js"></script>
+<script src="js/recalls-db.js"></script>
+<script src="js/vehicle-expert.js"></script>
+<script src="js/gemini-search.js"></script>
+<script src="js/app.js"></script>
+<script>
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
+(function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
+window.addEventListener('load',()=>setTimeout(h,900));setTimeout(h,5000);})();
+</script>
+</body>
+</html>
