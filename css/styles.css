@@ -166,3 +166,6 @@ body.locked .app-header,body.locked section,body.locked nav,body.locked footer,b
 .gate-card input{width:100%;padding:.8rem;border-radius:8px;border:2px solid #444;background:#2a2a2c;color:#eee;font-size:1rem}
 .gate-card button{width:100%;margin-top:.6rem}
 #adminPanel{border-top:4px solid #2e7d32}
+/* v18 - Elroq */
+#elroqGrid .cause-card{border-left-color:#4caf50}
+#elroqChips{flex-wrap:wrap;gap:.4rem}
