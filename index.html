@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin : rappels et pannes origine incendie véhicules 2018-2026, formation investigation">
+<meta name="description" content="diag-incendie-by-kevin v9 : cas incendies véhicules 2018-2026 + MAJ mensuelle automatique">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -15,15 +15,16 @@
 <title>diag-incendie-by-kevin</title>
 </head>
 <body>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — base experte v8</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v9 + MAJ mensuelle</p></div>
+<div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">Rappels & pannes 2018-2026 • NFPA 921 • ASTM E2929 • NHTSA / Rappel Conso / Safety Gate</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v9 • Cas 2018-2026 + MAJ mensuelle auto • NFPA 921 • ASTM E2929</p></div>
 </div></header>
 
 <section class="search-section"><div class="search-container">
-<input type="text" id="searchInput" placeholder="Recherche globale : runaway, B+, FAP, EGR, perles..." autocomplete="off">
+<input type="text" id="searchInput" placeholder="Recherche globale : runaway, B+, EGR, FAP, perles..." autocomplete="off">
 <button id="searchBtn" class="btn-primary">🔍 Rechercher</button>
 <button id="geminiSearchBtn" class="btn-secondary">🤖 IA Gemini</button>
 </div><div id="searchResults"></div><div id="geminiResults"></div></section>
@@ -39,14 +40,13 @@
 <button class="nav-btn" data-filter="equipment">🧪 Chimique / GPL</button>
 </nav>
 
-<!-- RECHERCHES LOCALES PAR ÉNERGIE -->
 <section id="section-recalls">
-<h2>🚨 Rappels & pannes origine incendie 2018-2026</h2>
+<h2>🚨 Cas & rappels origine incendie (MAJ mensuelle)</h2>
 <div class="recall-searches">
 <div class="rs-box"><label>🚗 Thermique</label><input id="q-thermal" placeholder="marque, modèle, moteur..."><button class="rs-btn" data-energy="thermal">Chercher</button></div>
 <div class="rs-box"><label>🔋 Électrique</label><input id="q-ev" placeholder="marque, modèle, batterie..."><button class="rs-btn" data-energy="ev">Chercher</button></div>
-<div class="rs-box"><label>🔄 Hybride</label><input id="q-hybrid" placeholder="marque, modèle, PHEV/HEV..."><button class="rs-btn" data-energy="hybrid">Chercher</button></div>
-<div class="rs-box"><label>⛽ GPL</label><input id="q-lpg" placeholder="marque, modèle, réservoir..."><button class="rs-btn" data-energy="lpg">Chercher</button></div>
+<div class="rs-box"><label>🔄 Hybride</label><input id="q-hybrid" placeholder="marque, PHEV/HEV..."><button class="rs-btn" data-energy="hybrid">Chercher</button></div>
+<div class="rs-box"><label>⛽ GPL</label><input id="q-lpg" placeholder="marque, réservoir..."><button class="rs-btn" data-energy="lpg">Chercher</button></div>
 </div>
 <p id="recallStats" class="ve-intro"></p>
 <div class="causes-grid" id="recallGrid"></div>
@@ -61,7 +61,7 @@
 <section><h2>🔋 Batterie HT</h2><div id="ev-seq" class="runaway-phases"></div><div id="ev-gas"></div><div class="id-card" id="ev-trig"></div><div class="id-card" id="ev-cc"></div><div class="id-card" id="ev-chg"></div><div id="ev-reig"></div><div class="id-card" id="ev-ext"></div></section>
 <section><h2>🚗 Spécifique thermique</h2><div id="th-expert" class="runaway-details"></div></section>
 <section><h2>🗺️ Cartographie de fusion</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Matériau</th><th>T°</th><th>Interprétation</th></tr></thead><tbody id="vm-table"></tbody></table></div></section>
-<section><h2>🧑‍ Protocole véhicule</h2><div class="method-steps" id="vproto"></div></section>
+<section><h2>🧑 Protocole véhicule</h2><div class="method-steps" id="vproto"></div></section>
 <section><h2>🚗 Thermiques détaillés</h2><h3>Moteur</h3><div class="causes-grid" id="engineCauses"></div><h3>Habitacle</h3><div class="causes-grid" id="cabinCauses"></div></section>
 <section><h2>🔋 VE expert</h2><div class="chem-grid" id="chemGrid"></div><div class="runaway-phases" id="runawayPhases"></div><div class="runaway-details" id="runawayDetails"></div><div class="causes-grid" id="evCauses"></div></section>
 <section><h2>🔄 Hybrides</h2><div id="hybridInfo"></div></section>
@@ -74,12 +74,15 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale v8</h3><p id="storageStatus">Init...</p>
+<h3>💾 Base locale v9 + MAJ mensuelle</h3>
+<p id="storageStatus">Init...</p>
+<p id="feedInfo" class="feed-info"></p>
+<button id="syncNowBtn" class="btn-offline">🔄 Mettre à jour les cas maintenant</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
 <a href="tools/autodiag.html" class="btn-offline" style="display:inline-block;margin-left:.5rem;text-decoration:none">🩺 Autodiagnostic</a>
 <p id="offlineProgress"></p>
 <div class="storage-stats">
-<div class="stat"><span class="stat-label">Causes</span><span class="stat-value" id="casesCount">0</span></div>
+<div class="stat"><span class="stat-label">Cas</span><span class="stat-value" id="casesCount">0</span></div>
 <div class="stat"><span class="stat-label">Rappels</span><span class="stat-value" id="recallsCount">0</span></div>
 <div class="stat"><span class="stat-label">Photos</span><span class="stat-value" id="photosCount">0</span></div>
 <div class="stat"><span class="stat-label">Métaux</span><span class="stat-value" id="metalsCount">0</span></div>
@@ -92,15 +95,14 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v8 • NHTSA • Rappel Conso • Safety Gate • SAMR • KBA • NFPA 921 • ASTM E2929</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v9 • MAJ mensuelle auto (NHTSA / Rappel Conso / Safety Gate) • NFPA 921 • ASTM E2929</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
-<script src="js/database.js"></script>
-<script src="js/recalls-db.js"></script>
-<script src="js/vehicle-expert.js"></script>
+<script src="js/data-v9.js"></script>
+<script src="js/auto-update.js"></script>
 <script src="js/gemini-search.js"></script>
-<script src="js/app.js"></script>
+<script src="js/app-v9.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
