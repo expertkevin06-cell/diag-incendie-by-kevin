@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v16 : recherche alias (renault r5), autocomplétion, MAJ mensuelle">
+<meta name="description" content="diag-incendie-by-kevin v17 : contrôle accès admin/tiers, recherche live multi-sources, connexion permanente">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -15,39 +15,74 @@
 <title>diag-incendie-by-kevin</title>
 </head>
 <body>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v16</p></div>
+<!-- GATE D’ACCÈS -->
+<div id="gateOverlay" class="gate" style="display:none">
+<div class="gate-card">
+<img src="images/icon.svg" class="logo" alt="">
+<h1>🔒 diag-incendie-by-kevin</h1>
+<p id="gateStatus">Application protégée</p>
+<label>Mot de passe admin</label>
+<input type="password" id="gatePwd" placeholder="••••••••">
+<button id="gateAdminBtn" class="btn-primary">🔑 Entrer en admin</button>
+<hr style="margin:1rem 0;border:none;border-top:1px solid #555">
+<label>Demande d’accès (nom ou prénom)</label>
+<input type="text" id="gateName" placeholder="Votre nom ou prénom">
+<button id="gateReqBtn" class="btn-secondary">📨 Demander l’accès à Kevin</button>
+<p style="margin-top:.8rem;font-size:.8rem;opacity:.8">La demande arrive en notification directe sur l’APK admin (sans mail ni SMS).</p>
+</div>
+</div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v17</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v16 • Recherche « renault r5 » • Autocomplétion • MAJ mensuelle</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v17 • Accès contrôlé • Recherche live 24 sources • Connexion permanente</p></div>
 </div></header>
+
+<!-- PANNEAU ADMIN -->
+<section id="adminPanel" class="search-section" style="display:none;border-top:4px solid #2e7d32">
+<h2 style="margin-top:0">🛡️ ADMIN — demandes d’accès & appareils</h2>
+<button class="btn-offline" data-act="refresh" style="color:#2e7d32">🔄 Rafraîchir les demandes</button>
+<h3>Demandes reçues</h3><div class="causes-grid" id="adminRequests"></div>
+<h3>Appareils gérés (accès / révocation)</h3><div class="causes-grid" id="adminGrants"></div>
+</section>
 
 <section class="search-section garage-box">
 <h2 style="margin-top:0">🚘 Mon véhicule — tapez les premières lettres, choisissez</h2>
 <div class="garage-form">
-<div class="ac-wrap"><input id="gBrand2" autocomplete="off" placeholder="Marque : « ren », « ska », « by »..."><div class="ac-box"></div></div>
-<div class="ac-wrap"><input id="gModel2" autocomplete="off" placeholder="Modèle : « r5 », « elroq », « bigster »..."><div class="ac-box"></div></div>
-<div class="ac-wrap"><input id="gMotor2" autocomplete="off" placeholder="Motorisation : « bev », « 1.2 », « e-tech »..."><div class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gBrand2" autocomplete="off" placeholder="Marque : « ren », « ska »..."><div class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gModel2" autocomplete="off" placeholder="Modèle : « r5 », « elroq »..."><div class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gMotor2" autocomplete="off" placeholder="Motorisation : « bev », « 1.2 »..."><div class="ac-box"></div></div>
 <div class="ac-wrap"><input id="gPower2" autocomplete="off" placeholder="Puissance : « 96 », « 145 »..."><div class="ac-box"></div></div>
 <select id="gSub2" class="rs-btn"><option value="">Tous sous-systèmes</option><option value="elec">⚡ Électrique</option><option value="mech">⚙️ Mécanique</option><option value="belt">⛓️ Courroie</option><option value="gearbox">⚙️ Boîte</option><option value="turbo">🌀 Turbo</option><option value="egr">♻️ EGR</option><option value="dpf">🌫️ DPF/FAP/GPF</option><option value="adblue">💧 AdBlue</option><option value="adas">📡 ADAS</option><option value="camera">📷 Caméra</option><option value="charge">🔌 Charge</option><option value="range">🔋 Autonomie</option><option value="leak">🛢️ Fuite</option><option value="overheat">🌡️ Surchauffe</option><option value="fuel">⛽ Carburant/GPL</option></select>
 <button id="gBtn2" class="btn-primary">🚘 Analyser (attribution vérifiée)</button>
 </div>
 <div id="garageReport2"></div>
-<details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:600">✍️ Mode texte libre</summary>
+<details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:600">✍️ Mode texte libre (prédiction marque & modèle)</summary>
 <div class="garage-form" style="margin-top:.6rem">
-<input list="brandList" id="gBrand" placeholder="Marque">
-<datalist id="brandList"><option value="Audi"><option value="Volkswagen"><option value="Skoda"><option value="Renault"><option value="Dacia"><option value="Peugeot"><option value="Citroën"><option value="Opel"><option value="Fiat"><option value="Mercedes"><option value="BMW"><option value="Ford"><option value="Toyota"><option value="Hyundai"><option value="Kia"><option value="Tesla"><option value="BYD"><option value="MG"><option value="Volvo"><option value="Nissan"><option value="Mazda"><option value="Honda"><option value="Jeep"><option value="Chevrolet"><option value="Porsche"><option value="Seat"><option value="Suzuki"><option value="Mitsubishi"><option value="Subaru"><option value="Lexus"><option value="Geely"><option value="Great Wall / Haval"><option value="Chery"><option value="NIO"><option value="XPeng"><option value="Li Auto"><option value="Zeekr"><option value="VinFast"><option value="Jaguar"><option value="Land Rover"><option value="Smart"><option value="Polestar"></datalist>
-<input id="gModel" placeholder="Modèle"><input id="gMotor" placeholder="Motorisation">
+<input list="brandList" id="gBrand" placeholder="Marque (prédiction)">
+<datalist id="brandList"></datalist>
+<input list="modelList17" id="gModel" placeholder="Modèle (prédiction)">
+<input id="gMotor" placeholder="Motorisation">
 <button id="gBtn" class="btn-primary">Analyser</button>
 </div><div id="garageReport"></div></details>
 </section>
 
 <section class="search-section"><div class="search-container">
-<input type="text" id="searchInput" placeholder="Recherche globale : « renault r5 », « mercedes w206 », « vw id.4 »..." autocomplete="off">
+<input type="text" id="searchInput" placeholder="Recherche globale : « renault r5 », « mercedes w206 »..." autocomplete="off">
 <button id="searchBtn" class="btn-primary">🔍 Rechercher</button>
 <button id="geminiSearchBtn" class="btn-secondary">🤖 IA Gemini</button>
 </div><div id="searchResults"></div><div id="geminiResults"></div></section>
+
+<!-- RECHERCHE LIVE MULTI-SOURCES -->
+<section class="search-section" style="border-top:1px solid var(--border)">
+<h2 style="margin-top:0">🌐 Recherche LIVE : base locale + NHTSA + Rappel Conso + 24 sites spécialisés</h2>
+<div class="search-container">
+<input type="text" id="liveInput" placeholder="ex : Bolt battery, PureTech courroie, OM654 EGR...">
+<button id="liveBtn" class="btn-secondary">🌐 Recherche live multi-sources</button>
+</div>
+<div id="liveResults"></div>
+</section>
 
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🧠 Recherche expert (synonymes + scoring + facettes)</h2>
@@ -57,13 +92,6 @@
 <select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option><option value="belt">Courroie</option><option value="gearbox">Boîte</option><option value="turbo">Turbo</option><option value="egr">EGR</option><option value="dpf">DPF</option><option value="adblue">AdBlue</option><option value="adas">ADAS</option></select>
 <button id="xpBtn" class="btn-primary">🧠 Analyser</button>
 </div><div id="xpResults"></div></section>
-
-<section class="search-section" style="border-top:1px solid var(--border)">
-<h2 style="margin-top:0">🌐 Multi-sources (NHTSA, Rappel Conso, Safety Gate, sites spé)</h2>
-<div class="search-container">
-<input type="text" id="msInput" placeholder="ex : R5 E-Tech charge, Elroq, Bigster 48V...">
-<button id="msBtn" class="btn-secondary">🌐 Interroger les sources</button>
-</div><div id="multiResults"></div></section>
 
 <div id="connectionStatus" class="connection-status online"><span class="status-text">En ligne</span></div>
 
@@ -111,7 +139,7 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale v16 + MAJ mensuelle</h3>
+<h3>💾 Base locale v17 + MAJ mensuelle + live</h3>
 <p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info"></p>
 <button id="syncNowBtn" class="btn-offline">🔄 MAJ maintenant</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
@@ -131,7 +159,7 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v16 • alias r5/w206/id.4 • MAJ mensuelle • NFPA 921 • ASTM E2929</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v17 • Accès admin/tiers • 24 sources live • MAJ mensuelle • NFPA 921</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
@@ -141,7 +169,9 @@
 <script src="js/overheat-mech-db.js"></script>
 <script src="js/eu-failures-db.js"></script>
 <script src="js/vehicles-2025-db.js"></script>
+<script src="js/access-control.js"></script>
 <script src="js/search-engine.js"></script>
+<script src="js/live-search.js"></script>
 <script src="js/multi-search.js"></script>
 <script src="js/auto-update.js"></script>
 <script src="js/gemini-search.js"></script>
@@ -151,6 +181,7 @@
 <script src="js/ui-v12.js"></script>
 <script src="js/ui-v13.js"></script>
 <script src="js/ui-v16.js"></script>
+<script src="js/ui-v17.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
