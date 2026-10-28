@@ -140,3 +140,8 @@ select.rs-btn{background:#263238;color:#fff}
 #garageReport .causes-grid{margin-top:.6rem}
 #overheatGrid .cause-card{border-left-color:#e53935}
 #mechGrid .cause-card{border-left-color:#455a64}
+/* v13 */
+.garage-form select{padding:.8rem;border:2px solid var(--border);border-radius:var(--radius);font-size:.95rem;background:#fff}
+.garage-form select:focus{outline:none;border-color:var(--secondary)}
+#garageReport2 .cause-card{border-left-color:#00695c}
+details summary{color:var(--primary-dark)}
