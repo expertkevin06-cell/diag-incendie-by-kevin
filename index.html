@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v13 : cascades marque/modèle/motorisation/puissance, avaries FR/EU, ADAS, AdBlue, DPF, MAJ mensuelle">
+<meta name="description" content="diag-incendie-by-kevin v14 : autocomplétion marque/modèle/motorisation/puissance, avaries FR/EU, MAJ mensuelle">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -15,30 +15,30 @@
 <title>diag-incendie-by-kevin</title>
 </head>
 <body>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v13</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v14</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v13 • Cascades marque→modèle→motorisation→puissance • FR/EU • MAJ mensuelle</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v14 • Saisie intuitive marque→modèle→motorisation→puissance • MAJ mensuelle</p></div>
 </div></header>
 
-<!-- SÉLECTEURS EN CASCADE (EN HAUT) -->
+<!-- CASCADES AVEC AUTOCOMPLÉTION (EN HAUT) -->
 <section class="search-section garage-box">
-<h2 style="margin-top:0">🚘 Mon véhicule exact — pannes vérifiées par attribution</h2>
+<h2 style="margin-top:0">🚘 Mon véhicule — tapez le début, choisissez dans les suggestions</h2>
 <div class="garage-form">
-<select id="gBrand2" class="rs-btn"><option value="">Marque...</option></select>
-<select id="gModel2" class="rs-btn"><option value="">Modèle...</option></select>
-<select id="gMotor2" class="rs-btn"><option value="">Motorisation...</option></select>
-<select id="gPower2" class="rs-btn"><option value="">Puissance...</option></select>
+<div class="ac-wrap"><input id="gBrand2" autocomplete="off" placeholder="Marque : « mer », « vol », « by »..."><div id="acBrand" class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gModel2" autocomplete="off" placeholder="Modèle : « c », « 3008 », « id »..."><div id="acModel" class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gMotor2" autocomplete="off" placeholder="Motorisation : « 2.0 », « 1.5 », « bev »..."><div id="acMotor" class="ac-box"></div></div>
+<div class="ac-wrap"><input id="gPower2" autocomplete="off" placeholder="Puissance : « 14 », « 96 », « 110 »..."><div id="acPower" class="ac-box"></div></div>
 <select id="gSub2" class="rs-btn"><option value="">Tous sous-systèmes</option><option value="elec">⚡ Électrique</option><option value="mech">⚙️ Mécanique</option><option value="belt">⛓️ Courroie</option><option value="gearbox">⚙️ Boîte</option><option value="turbo">🌀 Turbo</option><option value="egr">♻️ EGR</option><option value="dpf">🌫️ DPF/FAP/GPF</option><option value="adblue">💧 AdBlue</option><option value="adas">📡 ADAS</option><option value="camera">📷 Caméra</option><option value="charge">🔌 Charge</option><option value="range">🔋 Autonomie</option><option value="leak">🛢️ Fuite</option><option value="overheat">🌡️ Surchauffe</option><option value="fuel">⛽ Carburant/GPL</option></select>
 <button id="gBtn2" class="btn-primary">🚘 Analyser (attribution vérifiée)</button>
 </div>
 <div id="garageReport2"></div>
-<details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:600">✍️ Mode texte libre (marque/modèle/motorisation libres)</summary>
+<details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:600">✍️ Mode texte libre (sans suggestions)</summary>
 <div class="garage-form" style="margin-top:.6rem">
 <input list="brandList" id="gBrand" placeholder="Marque">
-<datalist id="brandList"><option value="Audi"><option value="Volkswagen"><option value="Skoda"><option value="Renault"><option value="Dacia"><option value="Peugeot"><option value="Citroën"><option value="Opel"><option value="Fiat"><option value="Mercedes"><option value="BMW"><option value="Ford"><option value="Toyota"><option value="Hyundai"><option value="Kia"><option value="Tesla"><option value="BYD"><option value="MG"><option value="Volvo"><option value="Nissan"><option value="Mazda"><option value="Honda"><option value="Jeep"><option value="Chrysler"><option value="Chevrolet"><option value="Porsche"><option value="Seat"><option value="Cupra"><option value="Suzuki"><option value="Mitsubishi"><option value="Subaru"><option value="Lexus"><option value="Geely"><option value="Great Wall / Haval"><option value="Chery"><option value="NIO"><option value="XPeng"><option value="Li Auto"><option value="Zeekr"><option value="VinFast"><option value="Jaguar"><option value="Land Rover"><option value="Smart"><option value="Polestar"></datalist>
+<datalist id="brandList"><option value="Audi"><option value="Volkswagen"><option value="Skoda"><option value="Renault"><option value="Dacia"><option value="Peugeot"><option value="Citroën"><option value="Opel"><option value="Fiat"><option value="Mercedes"><option value="BMW"><option value="Ford"><option value="Toyota"><option value="Hyundai"><option value="Kia"><option value="Tesla"><option value="BYD"><option value="MG"><option value="Volvo"><option value="Nissan"><option value="Mazda"><option value="Honda"><option value="Jeep"><option value="Chevrolet"><option value="Porsche"><option value="Seat"><option value="Suzuki"><option value="Mitsubishi"><option value="Subaru"><option value="Lexus"><option value="Geely"><option value="Great Wall / Haval"><option value="Chery"><option value="NIO"><option value="XPeng"><option value="Li Auto"><option value="Zeekr"><option value="VinFast"><option value="Jaguar"><option value="Land Rover"><option value="Smart"><option value="Polestar"></datalist>
 <input id="gModel" placeholder="Modèle">
 <input id="gMotor" placeholder="Motorisation">
 <button id="gBtn" class="btn-primary">Analyser</button>
@@ -113,7 +113,7 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale v13 + MAJ mensuelle</h3>
+<h3>💾 Base locale v14 + MAJ mensuelle</h3>
 <p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info"></p>
 <button id="syncNowBtn" class="btn-offline">🔄 MAJ maintenant</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
@@ -133,7 +133,7 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v13 • FR/EU/US/ASIE/CN • NHTSA • Rappel Conso • Safety Gate • SAMR • KBA • NFPA 921</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v14 • Autocomplétion cascades • FR/EU/US/ASIE/CN • MAJ mensuelle</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
