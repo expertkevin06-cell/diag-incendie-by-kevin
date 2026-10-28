@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v12 : diagnostic par véhicule (marque/modèle/motorisation), surchauffes, mécanique, fuites, batteries, MAJ mensuelle">
+<meta name="description" content="diag-incendie-by-kevin v13 : cascades marque/modèle/motorisation/puissance, avaries FR/EU, ADAS, AdBlue, DPF, MAJ mensuelle">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -15,27 +15,34 @@
 <title>diag-incendie-by-kevin</title>
 </head>
 <body>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v12</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v13</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v12 • Mon véhicule • Surchauffes • Méca • Fuites • Batteries • MAJ mensuelle</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v13 • Cascades marque→modèle→motorisation→puissance • FR/EU • MAJ mensuelle</p></div>
 </div></header>
 
-<!-- BOÎTE VÉHICULE UTILISATEUR (EN HAUT) -->
+<!-- SÉLECTEURS EN CASCADE (EN HAUT) -->
 <section class="search-section garage-box">
-<h2 style="margin-top:0">🚘 Mon véhicule — toutes les pannes connues</h2>
+<h2 style="margin-top:0">🚘 Mon véhicule exact — pannes vérifiées par attribution</h2>
 <div class="garage-form">
-<input list="brandList" id="gBrand" placeholder="Marque (Peugeot, VW, Toyota, BYD...)">
-<datalist id="brandList">
-<option value="Alfa Romeo"><option value="Audi"><option value="BAIC"><option value="BMW"><option value="BYD"><option value="Cadillac"><option value="Changan"><option value="Chery"><option value="Chevrolet"><option value="Chrysler"><option value="Citroën"><option value="Cupra"><option value="Dacia"><option value="Dodge"><option value="DS"><option value="Fiat"><option value="Ford"><option value="GAC Aion"><option value="Geely"><option value="Genesis"><option value="GMC"><option value="Great Wall / Haval"><option value="Honda"><option value="Hyundai"><option value="Infiniti"><option value="Jaguar"><option value="Jeep"><option value="Kia"><option value="Lancia"><option value="Land Rover"><option value="Lexus"><option value="Li Auto"><option value="Lucid"><option value="Lynk & Co"><option value="Mazda"><option value="Mercedes"><option value="MG"><option value="MINI"><option value="Mitsubishi"><option value="NIO"><option value="Nissan"><option value="Opel"><option value="Peugeot"><option value="Polestar"><option value="Porsche"><option value="Ram"><option value="Renault"><option value="Rivian"><option value="Seat"><option value="Skoda"><option value="Smart"><option value="Subaru"><option value="Suzuki"><option value="Tesla"><option value="Toyota"><option value="Volkswagen"><option value="Volvo"><option value="XPeng"><option value="Zeekr"><option value="VinFast">
-</datalist>
-<input id="gModel" placeholder="Modèle (3008, Golf 8, Model 3, Kona...)">
-<input id="gMotor" placeholder="Motorisation (1.5 BlueHDi, 2.0 TDI, 1.2 PureTech, PHEV, BEV, GPL...)">
-<button id="gBtn" class="btn-primary">🚘 Analyser mon véhicule</button>
+<select id="gBrand2" class="rs-btn"><option value="">Marque...</option></select>
+<select id="gModel2" class="rs-btn"><option value="">Modèle...</option></select>
+<select id="gMotor2" class="rs-btn"><option value="">Motorisation...</option></select>
+<select id="gPower2" class="rs-btn"><option value="">Puissance...</option></select>
+<select id="gSub2" class="rs-btn"><option value="">Tous sous-systèmes</option><option value="elec">⚡ Électrique</option><option value="mech">⚙️ Mécanique</option><option value="belt">⛓️ Courroie</option><option value="gearbox">⚙️ Boîte</option><option value="turbo">🌀 Turbo</option><option value="egr">♻️ EGR</option><option value="dpf">🌫️ DPF/FAP/GPF</option><option value="adblue">💧 AdBlue</option><option value="adas">📡 ADAS</option><option value="camera">📷 Caméra</option><option value="charge">🔌 Charge</option><option value="range">🔋 Autonomie</option><option value="leak">🛢️ Fuite</option><option value="overheat">🌡️ Surchauffe</option><option value="fuel">⛽ Carburant/GPL</option></select>
+<button id="gBtn2" class="btn-primary">🚘 Analyser (attribution vérifiée)</button>
 </div>
-<div id="garageReport"></div>
+<div id="garageReport2"></div>
+<details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:600">✍️ Mode texte libre (marque/modèle/motorisation libres)</summary>
+<div class="garage-form" style="margin-top:.6rem">
+<input list="brandList" id="gBrand" placeholder="Marque">
+<datalist id="brandList"><option value="Audi"><option value="Volkswagen"><option value="Skoda"><option value="Renault"><option value="Dacia"><option value="Peugeot"><option value="Citroën"><option value="Opel"><option value="Fiat"><option value="Mercedes"><option value="BMW"><option value="Ford"><option value="Toyota"><option value="Hyundai"><option value="Kia"><option value="Tesla"><option value="BYD"><option value="MG"><option value="Volvo"><option value="Nissan"><option value="Mazda"><option value="Honda"><option value="Jeep"><option value="Chrysler"><option value="Chevrolet"><option value="Porsche"><option value="Seat"><option value="Cupra"><option value="Suzuki"><option value="Mitsubishi"><option value="Subaru"><option value="Lexus"><option value="Geely"><option value="Great Wall / Haval"><option value="Chery"><option value="NIO"><option value="XPeng"><option value="Li Auto"><option value="Zeekr"><option value="VinFast"><option value="Jaguar"><option value="Land Rover"><option value="Smart"><option value="Polestar"></datalist>
+<input id="gModel" placeholder="Modèle">
+<input id="gMotor" placeholder="Motorisation">
+<button id="gBtn" class="btn-primary">Analyser</button>
+</div><div id="garageReport"></div></details>
 </section>
 
 <section class="search-section"><div class="search-container">
@@ -47,22 +54,18 @@
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🧠 Recherche expert (synonymes + scoring + facettes)</h2>
 <div class="search-container">
-<input type="text" id="xpInput" placeholder="ex : surchauffe, courroie humide, EGR, ICCU, octovalve...">
+<input type="text" id="xpInput" placeholder="ex : AdBlue, GPF, ISG 48V, caméra, ICCU...">
 <select id="xpEnergy" class="rs-btn" style="width:auto"><option value="">Toutes énergies</option><option value="thermal">Thermique</option><option value="ev">Électrique</option><option value="hybrid">Hybride</option><option value="lpg">GPL</option></select>
-<select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option><option value="belt">Courroie</option><option value="gearbox">Boîte</option><option value="turbo">Turbo</option><option value="egr">EGR</option></select>
+<select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option><option value="belt">Courroie</option><option value="gearbox">Boîte</option><option value="turbo">Turbo</option><option value="egr">EGR</option><option value="dpf">DPF</option><option value="adblue">AdBlue</option><option value="adas">ADAS</option></select>
 <button id="xpBtn" class="btn-primary">🧠 Analyser</button>
-</div>
-<div id="xpResults"></div>
-</section>
+</div><div id="xpResults"></div></section>
 
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🌐 Multi-sources (NHTSA, Rappel Conso, Safety Gate, sites spé)</h2>
 <div class="search-container">
-<input type="text" id="msInput" placeholder="ex : PureTech belt, DQ200, EGR cooler...">
+<input type="text" id="msInput" placeholder="ex : OM654 EGR, PureTech belt, 9G-Tronic...">
 <button id="msBtn" class="btn-secondary">🌐 Interroger les sources</button>
-</div>
-<div id="multiResults"></div>
-</section>
+</div><div id="multiResults"></div></section>
 
 <div id="connectionStatus" class="connection-status online"><span class="status-text">En ligne</span></div>
 
@@ -75,20 +78,8 @@
 <button class="nav-btn" data-filter="equipment">🧪 Chimique / GPL</button>
 </nav>
 
-<!-- v12 : SURCHAUFFES -->
-<section id="section-overheat">
-<h2>🌡️ Surchauffes moteur thermique & VE</h2>
-<div id="overheatChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
-<div class="causes-grid" id="overheatGrid"></div>
-</section>
-
-<!-- v12 : MÉCANIQUE -->
-<section id="section-mech">
-<h2>⚙️ Mécanique : courroies, boîtes, turbo, EGR, refroidisseur EGR</h2>
-<div id="mechChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
-<div class="causes-grid" id="mechGrid"></div>
-</section>
-
+<section id="section-overheat"><h2>🌡️ Surchauffes thermique & VE</h2><div id="overheatChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="overheatGrid"></div></section>
+<section id="section-mech"><h2>⚙️ Mécanique : courroies, boîtes, turbo, EGR, refroidisseur EGR</h2><div id="mechChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="mechGrid"></div></section>
 <section id="section-leaks"><h2>🛢️ Fuites : huile, carburant, fluides</h2><div id="leaksChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="leaksGrid"></div></section>
 <section id="section-batt"><h2>🔋 Batteries 12V / 48V / HT</h2><div id="battChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="battGrid"></div></section>
 <section id="section-shorts"><h2>⚡ Courts-circuits & pannes électriques</h2><div id="shortsChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="shortsGrid"></div></section>
@@ -122,7 +113,7 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale v12 + MAJ mensuelle</h3>
+<h3>💾 Base locale v13 + MAJ mensuelle</h3>
 <p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info"></p>
 <button id="syncNowBtn" class="btn-offline">🔄 MAJ maintenant</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
@@ -142,7 +133,7 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v12 • NHTSA • Rappel Conso • Safety Gate • SAMR • KBA • NFPA 921 • ASTM E2929</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v13 • FR/EU/US/ASIE/CN • NHTSA • Rappel Conso • Safety Gate • SAMR • KBA • NFPA 921</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
@@ -150,6 +141,7 @@
 <script src="js/shorts-db.js"></script>
 <script src="js/leaks-batt-db.js"></script>
 <script src="js/overheat-mech-db.js"></script>
+<script src="js/eu-failures-db.js"></script>
 <script src="js/search-engine.js"></script>
 <script src="js/multi-search.js"></script>
 <script src="js/auto-update.js"></script>
@@ -158,6 +150,7 @@
 <script src="js/ui-v10.js"></script>
 <script src="js/ui-v11.js"></script>
 <script src="js/ui-v12.js"></script>
+<script src="js/ui-v13.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
