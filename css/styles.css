@@ -131,3 +131,12 @@ h3{color:var(--primary-dark);margin:1.2rem 0 .8rem;font-size:1.1rem}
 #battGrid .cause-card{border-left-color:#2e7d32}
 #xpResults h3{color:var(--primary);margin:.8rem 0 .4rem}
 select.rs-btn{background:#263238;color:#fff}
+/* v12 */
+.garage-box{border-top:4px solid var(--secondary)}
+.garage-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.6rem;max-width:1200px;margin:0 auto}
+.garage-form input{padding:.8rem;border:2px solid var(--border);border-radius:var(--radius);font-size:1rem}
+.garage-form input:focus{outline:none;border-color:var(--secondary)}
+#garageReport{max-width:1200px;margin:1rem auto 0}
+#garageReport .causes-grid{margin-top:.6rem}
+#overheatGrid .cause-card{border-left-color:#e53935}
+#mechGrid .cause-card{border-left-color:#455a64}
