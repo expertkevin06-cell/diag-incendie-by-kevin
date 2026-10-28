@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v18</title>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v19</title>
 <style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#4caf50}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#4caf50;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
-<h1>🩺 Autodiagnostic v18 (Elroq + sécurité + cascades)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<h1>🩺 Autodiagnostic v19 (méga-base + mdp sans points)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
-const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/app-v9.js','js/gemini-search.js'];
+const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/app-v9.js','js/gemini-search.js'];
 const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml']);
 const SECRET_RE=/Kevin\s?\d{4,6}/i;
 let LOG=[];const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'[KO] ')+t);return `<tr><td class="${ok==='OK'?'ok':ok==='WARN'?'warn':'ko'}">${ok}</td><td>${t}</td></tr>`;};
@@ -12,16 +12,17 @@ for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK'
 for(const f of JS){const src=await fetch(f,{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
  try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}
  if(SECRET_RE.test(src)){ko++;rows+=line('KO','⚠️ CLAIR SUSPECT dans '+f);}}
-const el=await fetch('js/elroq-db.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line((el.match(/id:"elq/g)||[]).length>=30?'OK':'KO','Fiches Elroq = '+((el.match(/id:"elq/g)||[]).length));
-rows+=line(el.includes('Elroq 85x')&&el.includes('pompe LDR')?'OK':'KO','Elroq : variantes 50/60/85/85x + campagne pompe LDR MEB');
+const mg=await fetch('js/models-mega-db.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
+rows+=line((mg.match(/id:"mg/g)||[]).length>=40?'OK':'KO','Méga-base fiches = '+((mg.match(/id:"mg/g)||[]).length));
+rows+=line(mg.includes('Clio 6')&&mg.includes('ID.7')&&mg.includes('Q6 e-tron')&&mg.includes('Taigo')&&mg.includes('Koleos II')?'OK':'KO','Catalogue : Clio 4/5/6, Koleos II, 208-5008, Duster/Bigster/Spring, A1-Q8, Polo-ID.7');
 const idx=await fetch('index.html',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(idx.includes('elroqGrid')&&idx.includes('elqInput')&&idx.includes('js/elroq-db.js')&&idx.includes('js/ui-v18.js')?'OK':'KO','Section Elroq + scripts câblés dans index');
+rows+=line(idx.includes('megaChips')&&idx.includes('models-mega-db.js')&&idx.includes('ui-v19.js')?'OK':'KO','Puces modèles + scripts v19 dans index');
+rows+=line(!idx.includes('•••')?'OK':'KO','Champ mot de passe SANS points par défaut');
 const ac=await fetch('js/access-control.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
 rows+=line(ac.includes('ADMIN_HASH:3615734019')&&!SECRET_RE.test(ac)?'OK':'KO','Admin hash-only, aucun clair');
 const sw=await fetch('service-worker.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
 const cn=(sw.match(/CACHE='([^']+)'/)||[])[1]||'?';
-rows+=line(/diag-v1[89]/.test(cn)?'OK':'KO','Cache SW : '+cn);
+rows+=line(/diag-v19|diag-v2/.test(cn)?'OK':'KO','Cache SW : '+cn);
 const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
 if(m){rows+=line(m.name==='diag-incendie-by-kevin'?'OK':'KO','Manifest = '+m.name);for(const ic of m.icons){const s=await st(ic.src);if(s!==200){ko++;rows+=line('KO','Icône '+ic.src+' → '+s);}}}else{ko++;rows+=line('KO','manifest illisible');}
 const fd=await fetch('data/recalls-feed.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
@@ -36,6 +37,6 @@ let bad=0,tot=0;if(navigator.onLine){const P=await fetch('js/data-v9.js',{cache:
 rows+=line(bad===0?'OK':'WARN','Photos réelles : '+(tot-bad)+'/'+tot);
 document.getElementById('out').innerHTML='<table>'+rows+'</table>';
 const v=document.getElementById('verdict');
-if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v18 : base Elroq complète, sécurité OK, cascades + live + MAJ mensuelle.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
+if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v19 : méga-base 32 modèles, mdp sans points, sécurité + cascades + live OK.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
 document.getElementById('report').textContent=LOG.join('\n');}
 </script></body></html>
