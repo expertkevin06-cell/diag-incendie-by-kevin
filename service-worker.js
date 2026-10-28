@@ -1,7 +1,13 @@
-const CACHE='diag-v8',DYN='diag-dyn-v8';
-const CORE=['./','./index.html','./manifest.json','./css/styles.css','./js/app.js','./js/database.js','./js/recalls-db.js','./js/vehicle-expert.js','./js/gemini-search.js','./images/icon.svg'];
+const CACHE='diag-v9',DYN='diag-dyn-v9',MONTH=30*24*3600*1000;
+const CORE=['./','./index.html','./manifest.json','./css/styles.css','./js/data-v9.js','./js/auto-update.js','./js/app-v9.js','./js/gemini-search.js','./images/icon.svg','./data/recalls-feed.json'];
 self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await Promise.allSettled(CORE.map(u=>c.add(u).catch(()=>null)));self.skipWaiting();})());});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&k!==DYN).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener('periodicsync',e=>{if(e.tag==='monthly-recalls'){e.waitUntil((async()=>{try{
+const res=await fetch('data/recalls-feed.json?v='+Date.now(),{cache:'no-store'});if(!res.ok)return;
+const feed=await res.json();const c=await caches.open(DYN);c.put('data/recalls-feed.json',new Response(JSON.stringify(feed)));
+const cls=await self.clients.matchAll({type:'window'});cls.forEach(cl=>cl.postMessage({type:'feed-updated',version:feed.version}));
+await self.registration.showNotification('diag-incendie-by-kevin',{body:'🔄 MAJ mensuelle : feed v'+feed.version+' téléchargé',icon:'images/icon-192x192.png'});
+}catch(err){console.warn('periodicsync:',err);}})());}});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);
 if(u.hostname.includes('generativelanguage.googleapis.com')){e.respondWith(net(e.request));return;}
 if(e.request.destination==='image'){e.respondWith(img(e.request));return;}
