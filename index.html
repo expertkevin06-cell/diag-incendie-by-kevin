@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v11 : fuites huile/carburant, batteries 12V/48V/HT, recherche expert, MAJ mensuelle">
+<meta name="description" content="diag-incendie-by-kevin v12 : diagnostic par véhicule (marque/modèle/motorisation), surchauffes, mécanique, fuites, batteries, MAJ mensuelle">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -15,13 +15,28 @@
 <title>diag-incendie-by-kevin</title>
 </head>
 <body>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v11</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v12</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v11 • Fuites & batteries 12/48/HT • Recherche expert • MAJ mensuelle</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v12 • Mon véhicule • Surchauffes • Méca • Fuites • Batteries • MAJ mensuelle</p></div>
 </div></header>
+
+<!-- BOÎTE VÉHICULE UTILISATEUR (EN HAUT) -->
+<section class="search-section garage-box">
+<h2 style="margin-top:0">🚘 Mon véhicule — toutes les pannes connues</h2>
+<div class="garage-form">
+<input list="brandList" id="gBrand" placeholder="Marque (Peugeot, VW, Toyota, BYD...)">
+<datalist id="brandList">
+<option value="Alfa Romeo"><option value="Audi"><option value="BAIC"><option value="BMW"><option value="BYD"><option value="Cadillac"><option value="Changan"><option value="Chery"><option value="Chevrolet"><option value="Chrysler"><option value="Citroën"><option value="Cupra"><option value="Dacia"><option value="Dodge"><option value="DS"><option value="Fiat"><option value="Ford"><option value="GAC Aion"><option value="Geely"><option value="Genesis"><option value="GMC"><option value="Great Wall / Haval"><option value="Honda"><option value="Hyundai"><option value="Infiniti"><option value="Jaguar"><option value="Jeep"><option value="Kia"><option value="Lancia"><option value="Land Rover"><option value="Lexus"><option value="Li Auto"><option value="Lucid"><option value="Lynk & Co"><option value="Mazda"><option value="Mercedes"><option value="MG"><option value="MINI"><option value="Mitsubishi"><option value="NIO"><option value="Nissan"><option value="Opel"><option value="Peugeot"><option value="Polestar"><option value="Porsche"><option value="Ram"><option value="Renault"><option value="Rivian"><option value="Seat"><option value="Skoda"><option value="Smart"><option value="Subaru"><option value="Suzuki"><option value="Tesla"><option value="Toyota"><option value="Volkswagen"><option value="Volvo"><option value="XPeng"><option value="Zeekr"><option value="VinFast">
+</datalist>
+<input id="gModel" placeholder="Modèle (3008, Golf 8, Model 3, Kona...)">
+<input id="gMotor" placeholder="Motorisation (1.5 BlueHDi, 2.0 TDI, 1.2 PureTech, PHEV, BEV, GPL...)">
+<button id="gBtn" class="btn-primary">🚘 Analyser mon véhicule</button>
+</div>
+<div id="garageReport"></div>
+</section>
 
 <section class="search-section"><div class="search-container">
 <input type="text" id="searchInput" placeholder="Recherche globale..." autocomplete="off">
@@ -29,23 +44,21 @@
 <button id="geminiSearchBtn" class="btn-secondary">🤖 IA Gemini</button>
 </div><div id="searchResults"></div><div id="geminiResults"></div></section>
 
-<!-- RECHERCHE EXPERT À FACETTES v11 -->
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🧠 Recherche expert (synonymes + scoring + facettes)</h2>
 <div class="search-container">
-<input type="text" id="xpInput" placeholder="ex : fuite huile turbo, cosse, dendrite, CP4, glycol, H2...">
+<input type="text" id="xpInput" placeholder="ex : surchauffe, courroie humide, EGR, ICCU, octovalve...">
 <select id="xpEnergy" class="rs-btn" style="width:auto"><option value="">Toutes énergies</option><option value="thermal">Thermique</option><option value="ev">Électrique</option><option value="hybrid">Hybride</option><option value="lpg">GPL</option></select>
-<select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="lpg">GPL</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option></select>
+<select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option><option value="belt">Courroie</option><option value="gearbox">Boîte</option><option value="turbo">Turbo</option><option value="egr">EGR</option></select>
 <button id="xpBtn" class="btn-primary">🧠 Analyser</button>
 </div>
 <div id="xpResults"></div>
 </section>
 
-<!-- MULTI-SOURCES v10 -->
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🌐 Multi-sources (NHTSA, Rappel Conso, Safety Gate, sites spé)</h2>
 <div class="search-container">
-<input type="text" id="msInput" placeholder="ex : Hyundai Tucson, BMW EGR, Bolt battery...">
+<input type="text" id="msInput" placeholder="ex : PureTech belt, DQ200, EGR cooler...">
 <button id="msBtn" class="btn-secondary">🌐 Interroger les sources</button>
 </div>
 <div id="multiResults"></div>
@@ -62,43 +75,35 @@
 <button class="nav-btn" data-filter="equipment">🧪 Chimique / GPL</button>
 </nav>
 
-<!-- v11 : FUITES -->
-<section id="section-leaks">
-<h2>🛢️ Fuites : huile, carburant, fluides (toutes marques)</h2>
-<div id="leaksChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
-<div class="causes-grid" id="leaksGrid"></div>
+<!-- v12 : SURCHAUFFES -->
+<section id="section-overheat">
+<h2>🌡️ Surchauffes moteur thermique & VE</h2>
+<div id="overheatChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
+<div class="causes-grid" id="overheatGrid"></div>
 </section>
 
-<!-- v11 : BATTERIES -->
-<section id="section-batt">
-<h2>🔋 Batteries 12V / 48V / Haute Tension</h2>
-<div id="battChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
-<div class="causes-grid" id="battGrid"></div>
+<!-- v12 : MÉCANIQUE -->
+<section id="section-mech">
+<h2>⚙️ Mécanique : courroies, boîtes, turbo, EGR, refroidisseur EGR</h2>
+<div id="mechChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
+<div class="causes-grid" id="mechGrid"></div>
 </section>
 
-<!-- v10 : courts-circuits -->
-<section id="section-shorts">
-<h2>⚡ Pannes électriques & courts-circuits</h2>
-<div id="shortsChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
-<div class="causes-grid" id="shortsGrid"></div>
-</section>
-
-<section id="section-recalls">
-<h2>🚨 Rappels & cas (MAJ mensuelle)</h2>
+<section id="section-leaks"><h2>🛢️ Fuites : huile, carburant, fluides</h2><div id="leaksChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="leaksGrid"></div></section>
+<section id="section-batt"><h2>🔋 Batteries 12V / 48V / HT</h2><div id="battChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="battGrid"></div></section>
+<section id="section-shorts"><h2>⚡ Courts-circuits & pannes électriques</h2><div id="shortsChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="shortsGrid"></div></section>
+<section id="section-recalls"><h2>🚨 Rappels & cas (MAJ mensuelle)</h2>
 <div class="recall-searches">
-<div class="rs-box"><label>🚗 Thermique</label><input id="q-thermal" placeholder="marque, modèle..."><button class="rs-btn" data-energy="thermal">Chercher</button></div>
-<div class="rs-box"><label>🔋 Électrique</label><input id="q-ev" placeholder="marque, batterie..."><button class="rs-btn" data-energy="ev">Chercher</button></div>
-<div class="rs-box"><label>🔄 Hybride</label><input id="q-hybrid" placeholder="marque, PHEV..."><button class="rs-btn" data-energy="hybrid">Chercher</button></div>
-<div class="rs-box"><label>⛽ GPL</label><input id="q-lpg" placeholder="marque, réservoir..."><button class="rs-btn" data-energy="lpg">Chercher</button></div>
-</div>
-<p id="recallStats" class="ve-intro"></p>
-<div class="causes-grid" id="recallGrid"></div>
-</section>
+<div class="rs-box"><label>🚗 Thermique</label><input id="q-thermal"><button class="rs-btn" data-energy="thermal">Chercher</button></div>
+<div class="rs-box"><label>🔋 Électrique</label><input id="q-ev"><button class="rs-btn" data-energy="ev">Chercher</button></div>
+<div class="rs-box"><label>🔄 Hybride</label><input id="q-hybrid"><button class="rs-btn" data-energy="hybrid">Chercher</button></div>
+<div class="rs-box"><label>⛽ GPL</label><input id="q-lpg"><button class="rs-btn" data-energy="lpg">Chercher</button></div>
+</div><p id="recallStats" class="ve-intro"></p><div class="causes-grid" id="recallGrid"></div></section>
 
 <section><h2>🔬 Méthodologie NFPA 921</h2><div class="method-steps" id="methodSteps"></div><h3>📐 Patterns</h3><div class="patterns-grid" id="patternsGrid"></div></section>
 <section><h2>⚗️ Chimie du feu</h2><div class="tetrahedron" id="tetrahedron"></div><div class="phenomena-grid" id="phenomenaGrid"></div><div class="table-container"><table class="metal-table" id="gasTable"><thead><tr><th>Gaz</th><th>Source</th><th>Danger</th></tr></thead><tbody></tbody></table></div></section>
 <section><h2>📍 Zones du véhicule</h2><div class="ve-zones" id="vz-grid"></div></section>
-<section><h2>🎯 Origines (analyse ingénieur)</h2><p class="ve-intro">Touchez chaque bloc.</p><div id="vo-grid"></div></section>
+<section><h2>🎯 Origines (analyse ingénieur)</h2><div id="vo-grid"></div></section>
 <section><h2>🧱 Polymères</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Polymère</th><th>Usages</th><th>Feu</th><th>Rôle</th></tr></thead><tbody id="vp-table"></tbody></table></div><div class="id-card" id="vf-load"></div></section>
 <section><h2>📈 Développement du feu</h2><div id="vd-stages" class="runaway-phases"></div><h3>Aéraulique</h3><div class="id-card" id="vd-vent"></div><h3>Propagation</h3><div class="id-card" id="vd-spread"></div><h3>Direction</h3><div class="id-card" id="vd-dir"></div></section>
 <section><h2>🔋 Batterie HT</h2><div id="ev-seq" class="runaway-phases"></div><div id="ev-gas"></div><div class="id-card" id="ev-trig"></div><div class="id-card" id="ev-cc"></div><div class="id-card" id="ev-chg"></div><div id="ev-reig"></div><div class="id-card" id="ev-ext"></div></section>
@@ -117,7 +122,7 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale v11 + MAJ mensuelle</h3>
+<h3>💾 Base locale v12 + MAJ mensuelle</h3>
 <p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info"></p>
 <button id="syncNowBtn" class="btn-offline">🔄 MAJ maintenant</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
@@ -137,13 +142,14 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v11 • NHTSA • Rappel Conso • Safety Gate • SAMR • KBA • NFPA 921 • ASTM E2929</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v12 • NHTSA • Rappel Conso • Safety Gate • SAMR • KBA • NFPA 921 • ASTM E2929</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
 <script src="js/data-v9.js"></script>
 <script src="js/shorts-db.js"></script>
 <script src="js/leaks-batt-db.js"></script>
+<script src="js/overheat-mech-db.js"></script>
 <script src="js/search-engine.js"></script>
 <script src="js/multi-search.js"></script>
 <script src="js/auto-update.js"></script>
@@ -151,6 +157,7 @@
 <script src="js/app-v9.js"></script>
 <script src="js/ui-v10.js"></script>
 <script src="js/ui-v11.js"></script>
+<script src="js/ui-v12.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
