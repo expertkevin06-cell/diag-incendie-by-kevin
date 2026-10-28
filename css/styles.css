@@ -148,3 +148,11 @@ details summary{color:var(--primary-dark)}
 /* v13.1 - lisibilité des selects */
 .garage-form select option{color:#212121;background:#fff}
 .garage-form select{color:#212121;background:#fff}
+/* v14 - autocomplétion */
+.ac-wrap{position:relative}
+.ac-box{position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid var(--secondary);border-top:none;border-radius:0 0 8px 8px;max-height:230px;overflow-y:auto;z-index:1500;display:none;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.ac-box.open{display:block}
+.ac-item{padding:.6rem .75rem;cursor:pointer;font-size:.92rem;color:#212121;border-bottom:1px solid #f0f0f0}
+.ac-item.sel,.ac-item:hover{background:#ffe0b2}
+.garage-form input{padding:.8rem;border:2px solid var(--border);border-radius:var(--radius);font-size:.95rem;width:100%}
+.garage-form input:focus{outline:none;border-color:var(--secondary)}
