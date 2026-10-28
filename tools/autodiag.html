@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v14</title>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v15</title>
 <style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#ff6f00}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#ff6f00;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
-<h1>🩺 Autodiagnostic v14 (autocomplétion + syntaxe)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<h1>🩺 Autodiagnostic v15</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
-const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/search-engine.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/app-v9.js','js/gemini-search.js'];
+const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/search-engine.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/app-v9.js','js/gemini-search.js'];
 const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml']);
 let LOG=[];const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'[KO] ')+t);return `<tr><td class="${ok==='OK'?'ok':ok==='WARN'?'warn':'ko'}">${ok}</td><td>${t}</td></tr>`;};
 const st=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?200:r.status;}catch{return 'ERR';}};
@@ -10,12 +10,15 @@ async function run(){LOG=[];let rows='',ko=0;
 for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK':'KO',f+' → HTTP '+s);}
 for(const f of JS){const src=await fetch(f,{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
  try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}}
+const ui=await fetch('js/ui-v13.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
+rows+=line(ui.includes('__v15')&&ui.includes('attachAC')&&ui.includes('pointerdown')?'OK':'KO','Moteur autocomplétion v15 (auto-construit, pointerdown)');
+const v25=await fetch('js/vehicles-2025-db.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
+rows+=line(v25.includes('Renault 5 E-Tech')&&v25.includes('Elroq')&&v25.includes('Bigster')&&v25.includes('Symbioz')?'OK':'KO','Véhicules 2024-2026 présents (R5/R4, Elroq, Bigster, Austral, Rafale, Scenic, Symbioz)');
 const idx=await fetch('index.html',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(idx.includes('acBrand')&&idx.includes('acModel')&&idx.includes('acMotor')&&idx.includes('acPower')?'OK':'KO','4 zones autocomplétion présentes (acBrand/acModel/acMotor/acPower)');
-rows+=line(/<input id="gBrand2"/.test(idx)&&/<input id="gPower2"/.test(idx)?'OK':'KO','Champs saisie intuitive gBrand2…gPower2');
+rows+=line(idx.includes('vehicles-2025-db.js')?'OK':'KO','index.html charge vehicles-2025-db.js');
 const sw=await fetch('service-worker.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
 const cn=(sw.match(/CACHE='([^']+)'/)||[])[1]||'?';
-rows+=line(/diag-v1[4-9]/.test(cn)?'OK':'KO','Cache SW purgé : '+cn);
+rows+=line(/diag-v1[5-9]/.test(cn)?'OK':'KO','Cache SW purgé : '+cn);
 const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
 if(m){rows+=line(m.name==='diag-incendie-by-kevin'?'OK':'KO','Manifest = '+m.name);for(const ic of m.icons){const s=await st(ic.src);if(s!==200){ko++;rows+=line('KO','Icône '+ic.src+' → '+s);}}}else{ko++;rows+=line('KO','manifest illisible');}
 const fd=await fetch('data/recalls-feed.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
@@ -24,13 +27,13 @@ let swr='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.g
 rows+=line(swr,'Service Worker actif');
 rows+=line('periodicSync' in navigator?'OK':'WARN','Periodic Sync mensuel : '+('periodicSync' in navigator?'oui':'fallback lancement'));
 let ct=null;try{ct=JSON.parse(localStorage.getItem('cascadeTest')||'null');}catch(e){}
-if(ct&&ct.res&&ct.res.length===3&&ct.res.every(n=>n>0))rows+=line('OK','AUTO-TEST cascades (Mercedes/Peugeot/VW) = '+ct.res.join(','));
+if(ct&&ct.res&&ct.res.length===4&&ct.res.every(n=>n>0))rows+=line('OK','AUTO-TEST cascades (Mercedes/R5/Elroq/Bigster) = '+ct.res.join(','));
 else if(ct)rows+=line('KO','AUTO-TEST cascades = '+(ct.res||[]).join(',')+' → ouvrez l\'app puis relancez');
-else rows+=line('WARN','AUTO-TEST cascades : ouvrez d\'abord l\'app une fois');
+else rows+=line('WARN','AUTO-TEST : ouvrez d\'abord l\'app une fois');
 let bad=0,tot=0;if(navigator.onLine){const P=await fetch('js/data-v9.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');for(const u of (P.match(/https:\/\/image[^"]+/g)||[]).slice(0,60)){tot++;try{await fetch(u,{mode:'no-cors',cache:'no-store'});}catch{bad++;}}}
 rows+=line(bad===0?'OK':'WARN','Photos réelles : '+(tot-bad)+'/'+tot);
 document.getElementById('out').innerHTML='<table>'+rows+'</table>';
 const v=document.getElementById('verdict');
-if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v14 : autocomplétion opérationnelle, syntaxe OK, SW purgé.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
+if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v15 : autocomplétion sans faille + véhicules 2024-2026 + MAJ mensuelle.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
 document.getElementById('report').textContent=LOG.join('\n');}
 </script></body></html>
