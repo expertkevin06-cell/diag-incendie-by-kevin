@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v9 : cas incendies véhicules 2018-2026 + MAJ mensuelle automatique">
+<meta name="description" content="diag-incendie-by-kevin v10 : pannes courts-circuits toutes marques 2018-2026 + recherche multi-sources + MAJ mensuelle">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -15,19 +15,29 @@
 <title>diag-incendie-by-kevin</title>
 </head>
 <body>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v9 + MAJ mensuelle</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v10</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v9 • Cas 2018-2026 + MAJ mensuelle auto • NFPA 921 • ASTM E2929</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v10 • Courts-circuits toutes marques • Multi-sources • MAJ mensuelle</p></div>
 </div></header>
 
 <section class="search-section"><div class="search-container">
-<input type="text" id="searchInput" placeholder="Recherche globale : runaway, B+, EGR, FAP, perles..." autocomplete="off">
+<input type="text" id="searchInput" placeholder="Recherche globale : B+, EGR, relais soudé, perles..." autocomplete="off">
 <button id="searchBtn" class="btn-primary">🔍 Rechercher</button>
 <button id="geminiSearchBtn" class="btn-secondary">🤖 IA Gemini</button>
 </div><div id="searchResults"></div><div id="geminiResults"></div></section>
+
+<!-- RECHERCHE MULTI-SOURCES v10 -->
+<section class="search-section" style="border-top:1px solid var(--border)">
+<h2 style="margin-top:0">🌐 Recherche multi-sources (NHTSA, Rappel Conso, Safety Gate, sites spé)</h2>
+<div class="search-container">
+<input type="text" id="msInput" placeholder="ex : Hyundai Tucson, BMW EGR, Bolt battery, Ducato faisceau...">
+<button id="msBtn" class="btn-secondary">🌐 Interroger les sources</button>
+</div>
+<div id="multiResults"></div>
+</section>
 
 <div id="connectionStatus" class="connection-status online"><span class="status-text">En ligne</span></div>
 
@@ -40,8 +50,15 @@
 <button class="nav-btn" data-filter="equipment">🧪 Chimique / GPL</button>
 </nav>
 
+<!-- NOUVEAU v10 : pannes électriques / courts-circuits -->
+<section id="section-shorts">
+<h2>⚡ Pannes électriques & courts-circuits (toutes marques 2018-2026)</h2>
+<div id="shortsChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
+<div class="causes-grid" id="shortsGrid"></div>
+</section>
+
 <section id="section-recalls">
-<h2>🚨 Cas & rappels origine incendie (MAJ mensuelle)</h2>
+<h2>🚨 Rappels & cas origine incendie (MAJ mensuelle)</h2>
 <div class="recall-searches">
 <div class="rs-box"><label>🚗 Thermique</label><input id="q-thermal" placeholder="marque, modèle, moteur..."><button class="rs-btn" data-energy="thermal">Chercher</button></div>
 <div class="rs-box"><label>🔋 Électrique</label><input id="q-ev" placeholder="marque, modèle, batterie..."><button class="rs-btn" data-energy="ev">Chercher</button></div>
@@ -74,7 +91,7 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale v9 + MAJ mensuelle</h3>
+<h3>💾 Base locale v10 + MAJ mensuelle</h3>
 <p id="storageStatus">Init...</p>
 <p id="feedInfo" class="feed-info"></p>
 <button id="syncNowBtn" class="btn-offline">🔄 Mettre à jour les cas maintenant</button>
@@ -83,7 +100,7 @@
 <p id="offlineProgress"></p>
 <div class="storage-stats">
 <div class="stat"><span class="stat-label">Cas</span><span class="stat-value" id="casesCount">0</span></div>
-<div class="stat"><span class="stat-label">Rappels</span><span class="stat-value" id="recallsCount">0</span></div>
+<div class="stat"><span class="stat-label">Rappels+pannes</span><span class="stat-value" id="recallsCount">0</span></div>
 <div class="stat"><span class="stat-label">Photos</span><span class="stat-value" id="photosCount">0</span></div>
 <div class="stat"><span class="stat-label">Métaux</span><span class="stat-value" id="metalsCount">0</span></div>
 </div></div>
@@ -95,14 +112,17 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v9 • MAJ mensuelle auto (NHTSA / Rappel Conso / Safety Gate) • NFPA 921 • ASTM E2929</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v10 • NHTSA • Rappel Conso • Safety Gate • SAMR • KBA • sites spé • NFPA 921 • ASTM E2929</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
 <script src="js/data-v9.js"></script>
+<script src="js/shorts-db.js"></script>
+<script src="js/multi-search.js"></script>
 <script src="js/auto-update.js"></script>
 <script src="js/gemini-search.js"></script>
 <script src="js/app-v9.js"></script>
+<script src="js/ui-v10.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
