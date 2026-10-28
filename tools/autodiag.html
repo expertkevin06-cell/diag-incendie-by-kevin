@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v8</title>
+<style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#ff6f00}td,th{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem;text-align:left}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#ff6f00;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
+<h1>🩺 Autodiagnostic diag-incendie-by-kevin v8</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<script>
+const CORE=['index.html','manifest.json','service-worker.js','css/styles.css','js/app.js','js/database.js','js/recalls-db.js','js/vehicle-expert.js','js/gemini-search.js','images/icon.svg','images/icon-192x192.png','images/icon-512x512.png','images/apple-touch-icon.png'];
+let LOG=[];
+const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'[KO] ')+t);return `<tr><td class="${ok==='OK'?'ok':ok==='WARN'?'warn':'ko'}">${ok}</td><td>${t}</td></tr>`;};
+const st=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?200:r.status;}catch{return 'ERR';}};
+async function run(){LOG=[];let rows='',ko=0;
+for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK':'KO',`${f} → HTTP ${s}`);}
+const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
+if(m){rows+=line(m.name.includes('diag-incendie-by-kevin')?'OK':'KO',`Manifest name = "${m.name}"`);
+for(const ic of m.icons){const s=await st(ic.src);if(s!==200){ko++;rows+=line('KO',`Icône ${ic.src} → ${s}`);}}}else{ko++;rows+=line('KO','manifest illisible');}
+let sw='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.getRegistration();sw=r&&r.active?'OK':'KO';}
+if(sw==='KO')ko++;rows+=line(sw,'Service Worker actif');
+rows+=line(typeof RECALLS!=='undefined'&&RECALLS.length>=50?'OK':'KO',`RECALLS = ${typeof RECALLS!=='undefined'?RECALLS.length:0} campagnes`);
+rows+=line(typeof VEHICLE_EXPERT!=='undefined'?'OK':'KO','VEHICLE_EXPERT chargé');
+rows+=line(typeof PHOTOS!=='undefined'&&Object.keys(PHOTOS).length>=50?'OK':'KO',`PHOTOS = ${Object.keys(PHOTOS).length} clés réelles`);
+let bad=0,tot=0;if(navigator.onLine){for(const k in PHOTOS){tot++;try{await fetch(PHOTOS[k].url,{mode:'no-cors',cache:'no-store'});}catch{bad++;rows+=line('KO',`Photo injoignable : ${k}`);}}}
+rows+=line(bad===0?'OK':'WARN',`Photos réelles : ${tot-bad}/${tot} accessibles`);
+document.getElementById('out').innerHTML='<table>'+rows+'</table>';
+const v=document.getElementById('verdict');
+if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME : prêt PWABuilder (Android/Windows/iOS).';}else{v.style.background='#b71c1c';v.textContent=`❌ ${ko} anomalie(s). Corrigez les KO.`;}
+document.getElementById('report').textContent=LOG.join('\n');}
+</script></body></html>
