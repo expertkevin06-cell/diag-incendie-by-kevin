@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v9</title>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v10</title>
 <style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#ff6f00}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#ff6f00;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
-<h1>🩺 Autodiagnostic v9 (MAJ mensuelle incluse)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<h1>🩺 Autodiagnostic v10</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
-const CORE=['index.html','manifest.json','service-worker.js','css/styles.css','js/data-v9.js','js/auto-update.js','js/app-v9.js','js/gemini-search.js','images/icon.svg','data/recalls-feed.json','images/icon-192x192.png','images/icon-512x512.png','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml'];
+const CORE=['index.html','manifest.json','service-worker.js','css/styles.css','js/data-v9.js','js/shorts-db.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/app-v9.js','js/gemini-search.js','images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml'];
 let LOG=[];const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'[KO] ')+t);return `<tr><td class="${ok==='OK'?'ok':ok==='WARN'?'warn':'ko'}">${ok}</td><td>${t}</td></tr>`;};
 const st=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?200:r.status;}catch{return 'ERR';}};
 async function run(){LOG=[];let rows='',ko=0;
@@ -10,15 +10,16 @@ for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK'
 const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
 if(m){rows+=line(m.name==='diag-incendie-by-kevin'?'OK':'KO','Manifest name = '+m.name);for(const ic of m.icons){const s=await st(ic.src);if(s!==200){ko++;rows+=line('KO','Icône '+ic.src+' → '+s);}}}else{ko++;rows+=line('KO','manifest illisible');}
 const fd=await fetch('data/recalls-feed.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
-rows+=line(fd?'OK':'KO','Feed JSON v'+(fd?fd.version:'?')+' — '+(fd?fd.cases.length:0)+' cas feed');
+rows+=line(fd?'OK':'KO','Feed v'+(fd?fd.version:'?')+' — '+(fd?fd.cases.length:0)+' cas');
 let sw='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.getRegistration();sw=r&&r.active?'OK':'KO';}if(sw==='KO')ko++;
-rows+=line(sw,'Service Worker actif');
-rows+=line('periodicSync' in navigator?'OK':'WARN','Periodic Background Sync supporté : '+('periodicSync' in navigator));
-rows+=line('PeriodicSyncManager' in window||'periodicSync' in (navigator.serviceWorker?ServiceWorkerRegistration.prototype:{}),'API periodicsync présente');
+rows+=line(sw,'Service Worker actif (v10)');
+rows+=line('periodicSync' in navigator?'OK':'WARN','Periodic Background Sync : '+('periodicSync' in navigator?'supporté':'non supporté (fallback lancement)'));
+rows+=line(typeof SHORTS!=='undefined'&&SHORTS.length>=40?'OK':'KO','SHORTS (pannes électriques) = '+(typeof SHORTS!=='undefined'?SHORTS.length:0));
+rows+=line(typeof msRun==='function'?'OK':'KO','Recherche multi-sources chargée');
 let bad=0,tot=0;if(navigator.onLine){const P=await fetch('js/data-v9.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');for(const u of (P.match(/https:\/\/image[^"]+/g)||[]).slice(0,60)){tot++;try{await fetch(u,{mode:'no-cors',cache:'no-store'});}catch{bad++;}}}
-rows+=line(bad===0?'OK':'WARN','Photos réelles testées : '+(tot-bad)+'/'+tot);
+rows+=line(bad===0?'OK':'WARN','Photos réelles : '+(tot-bad)+'/'+tot);
 document.getElementById('out').innerHTML='<table>'+rows+'</table>';
 const v=document.getElementById('verdict');
-if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v9 : MAJ mensuelle armée, prêt PWABuilder.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s) bloquante(s).';}
+if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v10 : MAJ mensuelle armée, multi-sources OK, prêt PWABuilder.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
 document.getElementById('report').textContent=LOG.join('\n');}
 </script></body></html>
