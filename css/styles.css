@@ -145,3 +145,6 @@ select.rs-btn{background:#263238;color:#fff}
 .garage-form select:focus{outline:none;border-color:var(--secondary)}
 #garageReport2 .cause-card{border-left-color:#00695c}
 details summary{color:var(--primary-dark)}
+/* v13.1 - lisibilité des selects */
+.garage-form select option{color:#212121;background:#fff}
+.garage-form select{color:#212121;background:#fff}
