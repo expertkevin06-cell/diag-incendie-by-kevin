@@ -126,3 +126,8 @@ h3{color:var(--primary-dark);margin:1.2rem 0 .8rem;font-size:1.1rem}
 #shortsGrid .cause-card{border-left-color:#7c4dff}
 #multiResults .search-result-item h4{font-size:.95rem}
 #multiResults a.rs-btn{background:#263238}
+/* v11 */
+#leaksGrid .cause-card{border-left-color:#ff6f00}
+#battGrid .cause-card{border-left-color:#2e7d32}
+#xpResults h3{color:var(--primary);margin:.8rem 0 .4rem}
+select.rs-btn{background:#263238;color:#fff}
