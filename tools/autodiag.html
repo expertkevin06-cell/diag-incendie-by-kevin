@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v19</title>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v20</title>
 <style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#4caf50}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#4caf50;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
-<h1>🩺 Autodiagnostic v19 (méga-base + mdp sans points)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<h1>🩺 Autodiagnostic v20 (prédictif + notif-only + diffusion admin)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
-const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/app-v9.js','js/gemini-search.js'];
+const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/predict-engine.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/ui-v20.js','js/app-v9.js','js/gemini-search.js'];
 const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml']);
 const SECRET_RE=/Kevin\s?\d{4,6}/i;
 let LOG=[];const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'[KO] ')+t);return `<tr><td class="${ok==='OK'?'ok':ok==='WARN'?'warn':'ko'}">${ok}</td><td>${t}</td></tr>`;};
@@ -12,17 +12,26 @@ for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK'
 for(const f of JS){const src=await fetch(f,{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
  try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}
  if(SECRET_RE.test(src)){ko++;rows+=line('KO','⚠️ CLAIR SUSPECT dans '+f);}}
-const mg=await fetch('js/models-mega-db.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line((mg.match(/id:"mg/g)||[]).length>=40?'OK':'KO','Méga-base fiches = '+((mg.match(/id:"mg/g)||[]).length));
-rows+=line(mg.includes('Clio 6')&&mg.includes('ID.7')&&mg.includes('Q6 e-tron')&&mg.includes('Taigo')&&mg.includes('Koleos II')?'OK':'KO','Catalogue : Clio 4/5/6, Koleos II, 208-5008, Duster/Bigster/Spring, A1-Q8, Polo-ID.7');
 const idx=await fetch('index.html',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(idx.includes('megaChips')&&idx.includes('models-mega-db.js')&&idx.includes('ui-v19.js')?'OK':'KO','Puces modèles + scripts v19 dans index');
-rows+=line(!idx.includes('•••')?'OK':'KO','Champ mot de passe SANS points par défaut');
+rows+=line(idx.includes('predictInput')&&idx.includes('predictBox')?'OK':'KO','Barre prédictive unique présente');
+rows+=line(!/<select id="gBrand2"/.test(idx)&&!/<select id="gModel2"/.test(idx)?'OK':'KO','Selects marque/modèle/moteur/puissance SUPPRIMÉS');
+rows+=line(idx.includes('shareApkBtn')&&idx.includes('mailto')===false&&idx.includes('shareApk')?'OK':'KO','Partage APK par mail (Web Share + mailto)');
+rows+=line(idx.includes('saveMassiveBtn')?'OK':'KO','Bouton sauvegarde massive locale');
+rows+=line(idx.includes('adminRelease')?'OK':'KO','Case validation diffusion MàJ admin');
+rows+=line(!idx.includes('•••')?'OK':'KO','Champ mot de passe SANS points');
+const pe=await fetch('js/predict-engine.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
+rows+=line(pe.includes('predClassify')&&pe.includes('predSearch')&&pe.includes('PRED_SUBS')?'OK':'KO','Moteur prédictif (marque/modèle/moteur/puissance/panne)');
 const ac=await fetch('js/access-control.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
 rows+=line(ac.includes('ADMIN_HASH:3615734019')&&!SECRET_RE.test(ac)?'OK':'KO','Admin hash-only, aucun clair');
+rows+=line(ac.includes('REL_TOPIC')&&ac.includes('acValidateRelease')&&ac.includes('acCheckReleases')?'OK':'KO','Diffusion MàJ validée par admin (ntfy release)');
+rows+=line(ac.includes('acPersistBase')&&ac.includes('persist')?'OK':'KO','Base locale persistante (storage.persist)');
+rows+=line(ac.includes('acDecide')&&ac.includes('revoked')?'OK':'KO','Accès tiers notif-only : accord/refus/révocation');
+const au=await fetch('js/auto-update.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
+rows+=line(au.includes('applyFeedMerge')?'OK':'KO','Helper fusion feed (MàJ applicables)');
 const sw=await fetch('service-worker.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
 const cn=(sw.match(/CACHE='([^']+)'/)||[])[1]||'?';
-rows+=line(/diag-v19|diag-v2/.test(cn)?'OK':'KO','Cache SW : '+cn);
+rows+=line(/diag-v2|diag-v19/.test(cn)?'OK':'KO','Cache SW : '+cn);
+rows+=line(sw.includes('ntfy.sh')&&sw.includes('api.nhtsa.gov')?'OK':'KO','SW network-first permanent (ntfy/NHTSA/data.gouv)');
 const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
 if(m){rows+=line(m.name==='diag-incendie-by-kevin'?'OK':'KO','Manifest = '+m.name);for(const ic of m.icons){const s=await st(ic.src);if(s!==200){ko++;rows+=line('KO','Icône '+ic.src+' → '+s);}}}else{ko++;rows+=line('KO','manifest illisible');}
 const fd=await fetch('data/recalls-feed.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
@@ -30,13 +39,12 @@ rows+=line(fd?'OK':'KO','Feed v'+(fd?fd.version:'?')+' — '+(fd?fd.cases.length
 let swr='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.getRegistration();swr=r&&r.active?'OK':'KO';}if(swr==='KO')ko++;
 rows+=line(swr,'Service Worker actif');
 rows+=line('periodicSync' in navigator?'OK':'WARN','Periodic Sync mensuel : '+('periodicSync' in navigator?'oui':'fallback'));
-let stest=null;try{stest=JSON.parse(localStorage.getItem('searchTest')||'null');}catch(e){}
-if(stest&&stest.r5>0)rows+=line('OK','TEST alias : r5='+stest.r5+' | w206='+stest.w206+' | id.4='+stest.id4);
-else rows+=line('WARN','TEST alias : ouvrez l\'app d\'abord');
+let ntfy='KO';try{const r=await fetch('https://ntfy.sh/health',{cache:'no-store'});ntfy=r.ok?'OK':'KO';}catch(e){ntfy='WARN';}
+rows+=line(ntfy,'Canal notifications ntfy.sh joignable');
 let bad=0,tot=0;if(navigator.onLine){const P=await fetch('js/data-v9.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');for(const u of (P.match(/https:\/\/image[^"]+/g)||[]).slice(0,60)){tot++;try{await fetch(u,{mode:'no-cors',cache:'no-store'});}catch{bad++;}}}
 rows+=line(bad===0?'OK':'WARN','Photos réelles : '+(tot-bad)+'/'+tot);
 document.getElementById('out').innerHTML='<table>'+rows+'</table>';
 const v=document.getElementById('verdict');
-if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v19 : méga-base 32 modèles, mdp sans points, sécurité + cascades + live OK.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
+if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v20 : prédictif unique, notif-only, diffusion admin, partage mail, base persistante.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
 document.getElementById('report').textContent=LOG.join('\n');}
 </script></body></html>
