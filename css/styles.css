@@ -175,3 +175,6 @@ body.locked .app-header,body.locked section,body.locked nav,body.locked footer,b
 /* v20 - barre prédictive unique */
 #predictInput{font-size:1.05rem;padding:.9rem 1rem}
 #ac-predict .ac-item small{margin-right:.4rem}
+/* v21 - prédiction exhaustive */
+#predictInput{font-size:1.05rem;padding:.9rem 1rem}
+.ac-item small{margin-right:.4rem}
