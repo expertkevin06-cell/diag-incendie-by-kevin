@@ -172,3 +172,6 @@ body.locked .app-header,body.locked section,body.locked nav,body.locked footer,b
 /* v19 - puces modèles rapides */
 .mega-chip{font-size:.78rem;padding:.5rem .8rem}
 #megaChips{border:1px dashed var(--border);border-radius:8px}
+/* v20 - barre prédictive unique */
+#predictInput{font-size:1.05rem;padding:.9rem 1rem}
+#ac-predict .ac-item small{margin-right:.4rem}
