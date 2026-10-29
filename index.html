@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v21 : prédiction exhaustive depuis la base locale + mise à jour auto 30 jours (modèles/moteurs/pannes)">
+<meta name="description" content="diag-incendie-by-kevin v22 : canal notifications durci (relais réels, sans jeton par défaut, file anti-perte)">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -27,31 +27,31 @@
 <label>Demande d’accès (nom ou prénom) — notification admin uniquement</label>
 <input type="text" id="gateName" placeholder="Votre nom ou prénom">
 <button id="gateReqBtn" class="btn-secondary">📨 Demander l’accès</button>
-<p style="margin-top:.8rem;font-size:.8rem;opacity:.8">Notification directe sur l’APK admin (sans mail/SMS). Accord / refus / révocation à tout moment.</p>
+<p style="margin-top:.8rem;font-size:.8rem;opacity:.8">Notification directe sur l’APK admin (sans mail/SMS). Si relais indisponible : demande en file, renvoi automatique.</p>
 </div>
 </div>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v21</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v22</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v21 • Prédiction exhaustive • MàJ auto 30 j • Notif-only • 4G/5G/WiFi permanent</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v22 • Canal durci • Prédiction exhaustive • MàJ 30 j • 4G/5G/WiFi permanent</p></div>
 </div></header>
 
 <section id="adminPanel" class="search-section" style="display:none;border-top:4px solid #2e7d32">
-<h2 style="margin-top:0">🛡️ ADMIN — accès (notif-only) & suivi des mises à jour</h2>
+<h2 style="margin-top:0">🛡️ ADMIN — accès (notif-only) & mises à jour</h2>
 <p id="relayStatus" class="feed-info">État du relais : test en cours…</p>
+<div id="relayConfig"></div>
 <button class="btn-offline" data-act="refresh" style="color:#2e7d32">🔄 Rafraîchir les demandes</button>
 <h3>Demandes d’accès (notification)</h3><div class="causes-grid" id="adminRequests"></div>
 <h3>Appareils (révocation à tout moment)</h3><div class="causes-grid" id="adminGrants"></div>
-<h3>📡 Suivi des mises à jour (auto tous les 30 j)</h3><div id="adminRelease" class="id-card"></div>
+<h3>📡 Suivi des mises à jour (auto 30 j)</h3><div id="adminRelease" class="id-card"></div>
 </section>
 
-<!-- BARRE PRÉDICTIVE UNIQUE + RÉPONSES SOUS LA CASE -->
 <section class="search-section garage-box">
-<h2 style="margin-top:0">🔎 Recherche prédictive — toutes les réponses proposées sous la case</h2>
+<h2 style="margin-top:0">🔎 Recherche prédictive — toutes les réponses sous la case</h2>
 <div class="garage-form">
-<div class="ac-wrap" style="grid-column:1/-1"><input id="predictInput" autocomplete="off" placeholder="Tapez : marque, modèle, moteur, puissance OU panne (ex : « clio 5 courroie », « q4 obc », « 96 kw adblue »)…"><div id="predictBox" class="ac-box"></div></div>
+<div class="ac-wrap" style="grid-column:1/-1"><input id="predictInput" autocomplete="off" placeholder="Tapez : marque, modèle, moteur, puissance OU panne…"><div id="predictBox" class="ac-box"></div></div>
 </div>
 <div id="predictResults"></div>
 <div style="margin-top:.8rem;display:flex;gap:.5rem;flex-wrap:wrap">
@@ -73,7 +73,7 @@
 
 <section class="search-section" style="border-top:4px solid #4caf50">
 <h2 style="margin-top:0">🟢 Skoda Elroq — tous symptômes & pannes</h2>
-<div class="search-container" style="margin-bottom:.8rem"><input type="text" id="elqInput" placeholder="Symptôme : « charge lente », « 12v », « sifflement »..."></div>
+<div class="search-container" style="margin-bottom:.8rem"><input type="text" id="elqInput" placeholder="Symptôme : « charge lente », « 12v »..."></div>
 <p id="elqCount" class="ve-intro"></p>
 <div id="elroqChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
 <div class="causes-grid" id="elroqGrid"></div>
@@ -82,14 +82,14 @@
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🌐 Recherche LIVE : NHTSA + Rappel Conso + Safety Gate + 24 sites</h2>
 <div class="search-container">
-<input type="text" id="liveInput" placeholder="ex : Clio 5 GPL, Q4 OBC, ID.7 battery...">
+<input type="text" id="liveInput" placeholder="ex : Clio 5 GPL, Q4 OBC...">
 <button id="liveBtn" class="btn-secondary">🌐 Recherche live multi-sources</button>
 </div><div id="liveResults"></div></section>
 
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🧠 Recherche expert (synonymes + scoring + facettes)</h2>
 <div class="search-container">
-<input type="text" id="xpInput" placeholder="ex : AdBlue, GPF, ISG 48V, ICCU...">
+<input type="text" id="xpInput" placeholder="ex : AdBlue, GPF, ISG 48V...">
 <select id="xpEnergy" class="rs-btn" style="width:auto"><option value="">Toutes énergies</option><option value="thermal">Thermique</option><option value="ev">Électrique</option><option value="hybrid">Hybride</option><option value="lpg">GPL</option></select>
 <select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option><option value="belt">Courroie</option><option value="gearbox">Boîte</option><option value="turbo">Turbo</option><option value="egr">EGR</option><option value="dpf">DPF</option><option value="adblue">AdBlue</option><option value="adas">ADAS</option></select>
 <button id="xpBtn" class="btn-primary">🧠 Analyser</button>
@@ -130,9 +130,9 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale massive v21 + MàJ auto 30 j + connexion permanente</h3>
-<p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info">🔄 Chargement du statut de mise à jour…</p>
-<button id="syncNowBtn" class="btn-offline">🔄 Forcer la MàJ maintenant</button>
+<h3>💾 Base locale massive v22 + MàJ auto 30 j</h3>
+<p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info">🔄 Chargement…</p>
+<button id="syncNowBtn" class="btn-offline">🔄 Forcer la MàJ</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
 <a href="tools/autodiag.html" class="btn-offline" style="display:inline-block;margin-left:.5rem;text-decoration:none">🩺 Autodiagnostic</a>
 <p id="offlineProgress"></p>
@@ -150,7 +150,7 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v21 • Prédiction exhaustive • MàJ auto 30 j (Rappel Conso/NHTSA/Safety Gate/sites) • 4G/5G/WiFi permanent</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v22 • Canal ntfy durci (relais réels, sans jeton, file anti-perte) • MàJ 30 j</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
@@ -180,6 +180,7 @@
 <script src="js/ui-v19.js"></script>
 <script src="js/ui-v20.js"></script>
 <script src="js/ui-v21.js"></script>
+<script src="js/ui-v22.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
