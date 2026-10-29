@@ -1,6 +1,6 @@
 // ================================================================
-// MOTEUR PRÉDICTIF UNIQUE v20 (__predict) — 1 case pour tout
-// marque + modèle + motorisation + puissance + type de panne
+// MOTEUR PRÉDICTIF v21 (__predict) — suggestions = dictionnaires + BASE RÉELLE
+// Propose TOUTES les réponses possibles sous la case de recherche
 // ================================================================
 var __predict=true;
 var PRED_BRANDS=['renault','peugeot','citroen','ds','dacia','audi','volkswagen','vw','skoda','seat','cupra','opel','fiat','mercedes','bmw','ford','toyota','lexus','honda','hyundai','kia','genesis','nissan','mazda','subaru','mitsubishi','suzuki','tesla','byd','mg','nio','xpeng','zeekr','li auto','geely','great wall','haval','chery','volvo','polestar','jaguar','land rover','smart','vinfast','porsche','chevrolet','jeep','ram','dodge','chrysler'];
@@ -12,7 +12,7 @@ function predClassify(tok){tok=seNorm(tok);
  if(/^(\d{1,2}\.\d|\d{2,3})/.test(tok))return /kw|ch|hp/.test(tok)?'power':'motor';
  if(/^\d{2,4}$/.test(tok))return 'power';
  if(PRED_SUBS[tok]!==undefined)return 'sub';
- if(PRED_MODELS.some(function(m){return m.indexOf(tok)>=0||tok.indexOf(m.split(' ')[0])===0&&tok.length>1;}))return 'model';
+ if(PRED_MODELS.some(function(m){return m.indexOf(tok)>=0;}))return 'model';
  if(PRED_MOTORS.some(function(m){return m.indexOf(tok)>=0;}))return 'motor';
  return 'text';}
 function predParse(q){var toks=seNorm(q).split(/[\s,;]+/).filter(Boolean);var o={brand:'',model:'',motor:'',power:'',subs:[],free:[]};
@@ -24,23 +24,53 @@ function predParse(q){var toks=seNorm(q).split(/[\s,;]+/).filter(Boolean);var o=
   else if(c==='sub')o.subs.push(PRED_SUBS[t]);
   else o.free.push(t);});
  return o;}
-function predSuggestions(q){var toks=seNorm(q).split(/[\s,;]+/).filter(Boolean);var last=toks[toks.length-1]||'';var out=[];
- if(!last)return out;
- var wantBrand=toks.length<=1&&!predParse(q).brand;
- if(wantBrand)PRED_BRANDS.forEach(function(b){if(b.indexOf(last)===0)out.push({t:'🏷️ Marque',v:b.charAt(0).toUpperCase()+b.slice(1)});});
- PRED_MODELS.forEach(function(m){if(m.indexOf(last)===0)out.push({t:'🚗 Modèle',v:m.charAt(0).toUpperCase()+m.slice(1)});});
- PRED_MOTORS.forEach(function(m){if(m.indexOf(last)===0)out.push({t:'⚙️ Motorisation',v:m.toUpperCase()});});
- Object.keys(PRED_SUBS).forEach(function(k){if(k.indexOf(last)===0)out.push({t:'🔧 Panne',v:k});});
- if(/^\d+$/.test(last))out.push({t:'💪 Puissance',v:last+' kW'});
- return out.slice(0,12);}
+// ---- Extraction des valeurs RÉELLES présentes dans la base locale ----
+function realBrands(){var s={};PRED_BRANDS.forEach(function(b){s[b]=1;});
+ RECALLS.forEach(function(r){var b=seNorm(String(r.brand||'').split('/')[0].trim().split(' ')[0]);if(b&&b.length>2)s[b]=1;});return Object.keys(s).sort();}
+function realModels(brand){var s={};
+ RECALLS.forEach(function(r){if(!brand||brandMatch(r.brand||'',brand)){String(r.models||'').split(',').forEach(function(m){var c=cleanModel(m);if(c&&c.length<45)s[c.toLowerCase()]=c;});}});
+ PRED_MODELS.forEach(function(m){s[m]=m.charAt(0).toUpperCase()+m.slice(1);});return Object.keys(s).map(function(k){return s[k];}).sort();}
+function realMotors(brand,model){var s={};
+ RECALLS.forEach(function(r){if(!brand||brandMatch(r.brand||'',brand)){var rm=seNorm(cleanModel(r.models||''));if(!model||rm.indexOf(seNorm(model).split(' ')[0])>=0){var m=String(r.motor||'').split('(')[0].trim();if(m&&m!=='-'&&m.length<40)s[m.toLowerCase()]=m;}}});
+ PRED_MOTORS.forEach(function(m){s[m]=m.toUpperCase();});return Object.keys(s).map(function(k){return s[k];}).sort();}
+function realPowers(brand,model,motor){var s={};
+ RECALLS.forEach(function(r){if(!brand||brandMatch(r.brand||'',brand)){var rm=seNorm(cleanModel(r.models||''));if(!model||rm.indexOf(seNorm(model).split(' ')[0])>=0){var rmo=seNorm(r.motor||'');if(!motor||rmo.indexOf(seNorm(motor).split(' ')[0])>=0){if(r.power&&r.power!=='-')s[r.power]=1;var pm=String(r.motor||'').match(/\(([^)]*kW[^)]*)\)/);if(pm)s[pm[1]]=1;}}}});
+ return Object.keys(s).sort();}
+function realSubs(){return Object.keys(PRED_SUBS).filter(function(k,i,a){return a.indexOf(k)===i;}).sort();}
+// ---- Suggestions : TOUTES les réponses possibles selon la saisie ----
+function predSuggestions(q){var toks=seNorm(q).split(/[\s,;]+/).filter(Boolean);var last=toks[toks.length-1]||'';var p=predParse(q);var out=[];var seen={};
+ function add(cat,val){var key=cat+'|'+val;if(seen[key])return;seen[key]=1;out.push({t:cat,v:val});}
+ if(!last){ // rien tapé : aperçu de tout
+  realBrands().slice(0,8).forEach(function(b){add('🏷️ Marque',PRETTY_BRANDS[b]||cap15(b));});
+  Object.keys(PRED_SUBS).slice(0,10).forEach(function(k){add('🔧 Panne',k);});
+  return out.slice(0,14);}
+ var cls=predClassify(last);
+ // Marques
+ if(cls==='brand'||toks.length===1)realBrands().forEach(function(b){if(b.indexOf(last)===0)add('🏷️ Marque',PRETTY_BRANDS[b]||cap15(b));else if(b.indexOf(last)>0)add('🏷️ Marque',PRETTY_BRANDS[b]||cap15(b));});
+ // Modèles (selon marque déjà saisie ou non)
+ realModels(p.brand).forEach(function(m){var n=seNorm(m);if(n.indexOf(last)===0)add('🚗 Modèle',m);else if(n.indexOf(last)>0&&out.length<40)add('🚗 Modèle',m);});
+ // Motorisations
+ realMotors(p.brand,p.model).forEach(function(m){var n=seNorm(m);if(n.indexOf(last)>=0)add('⚙️ Motorisation',m);});
+ // Puissances
+ realPowers(p.brand,p.model,p.motor).forEach(function(pw){if(seNorm(pw).indexOf(last)>=0)add('💪 Puissance',pw);});
+ // Sous-systèmes / pannes
+ realSubs().forEach(function(k){if(k.indexOf(last)===0)add('🔧 Panne',k);});
+ return out.slice(0,18);}
+function tmModel(rm,t){if(rm.indexOf(t)>=0)return true;var m=t.match(/^([a-z]{1,3})(\d{1,3})$/);if(m){var fw=rm.split(' ')[0]||'';if(fw.indexOf(m[1])===0&&rm.indexOf(m[2])>=0)return true;}if(t.length>=4&&fuzzy16(rm,t))return true;return false;}
+function tokHay(hay,t){if(hay.indexOf(t)>=0)return true;if(t.length>=4&&fuzzy16(hay,t))return true;return false;}
+function altMatch(hay,hayM,w){var alts=(window.SE_SYN&&SE_SYN[w])||[];if(tokHay(hay,w)||tmModel(hayM,w))return true;for(var i=0;i<alts.length;i++){var a=seNorm(alts[i]);if(tokHay(hay,a)||tmModel(hayM,a))return true;}return false;}
+function recallMatch16(r,toks){var hayB=seNorm(r.brand||''),hayM=seNorm(r.models||''),hay=hayB+' '+hayM+' '+seNorm((r.motor||'')+' '+(r.cause||'')+' '+(r.mech||'')+' '+(r.ref||'')+' '+(r.subsys||''));
+ for(var i=0;i<toks.length;i++){var w=seNorm(toks[i]);if(!altMatch(hay,hayM,w)&&!(tokHay(hayB,w)))return false;}return true;}
+function score16(r,toks){var s=0,hb=seNorm(r.brand||''),hm=seNorm(r.models||'');toks.forEach(function(w){w=seNorm(w);if(hb.indexOf(w)>=0)s+=3;if(hm.indexOf(w)>=0||tmModel(hm,w))s+=3;});return s;}
 function predMatch(r,p){
  if(p.brand&&!brandMatch(r.brand||'',p.brand)&&!seNorm(r.brand||'').includes(p.brand))return false;
- if(p.model){var rm=seNorm(String(r.models||''));var mt=p.model.split(' ');var ok=mt.every(function(t){return rm.includes(t);})||rm.includes(mt[0]);if(!ok)return false;}
- if(p.motor){var rmo=seNorm(String(r.motor||'')+' '+String(r.models||''));if(!rmo.includes(seNorm(p.motor).split(' ')[0]))return false;}
+ if(p.model){var rm=seNorm(String(r.models||'').replace(/\([^)]*\)/g,''));var mt=p.model.split(' ');var ok=mt.every(function(t){return tmModel(rm,t);})||tmModel(rm,mt[0]);if(!ok)return false;}
+ if(p.motor){var rmo=seNorm(String(r.motor||'')+' '+String(r.models||''));if(!rmo.includes(seNorm(p.motor).split(' ')[0])&&!tmModel(rmo,seNorm(p.motor).split(' ')[0]))return false;}
  if(p.power&&r.power&&r.power!=='-'&&!powerOverlap2(r.power,p.power))return false;
  if(p.subs.length){var rs=r.subsys||bucketOf(r);if(p.subs.indexOf(rs)<0&&!p.subs.some(function(s){return seNorm(r.cause||'').includes(s);}))return false;}
- if(p.free.length){var hay=seNorm([r.brand,r.models,r.motor,r.cause,r.mech,r.idx].join(' '));for(var i=0;i<p.free.length;i++){if(hay.indexOf(p.free[i])<0&&!fuzzy16(hay,p.free[i]))return false;}}
+ if(p.free.length){var hay=seNorm([r.brand,r.models,r.motor,r.cause,r.mech,r.idx].join(' '));for(var i=0;i<p.free.length;i++){if(!tokHay(hay,p.free[i])&&!tmModel(hay,p.free[i]))return false;}}
  return true;}
-function predSearch(q){var p=predParse(q);var list=RECALLS.filter(function(r){return predMatch(r,p);});
- list.sort(function(a,b){return score16(b,[q])-score16(a,[q]);});
- return {parsed:p,list:list.slice(0,40)};}
+function predSearch(q){var p=predParse(q);var toks=seNorm(q).split(/[\s,;]+/).filter(Boolean);
+ var list=RECALLS.filter(function(r){return predMatch(r,p)&&recallMatch16(r,toks);});
+ list.sort(function(a,b){return score16(b,toks)-score16(a,toks);});
+ return {parsed:p,list:list.slice(0,50)};}
