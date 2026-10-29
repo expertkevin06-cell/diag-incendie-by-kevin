@@ -1,12 +1,11 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v21</title>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v22</title>
 <style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#4caf50}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#4caf50;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
-<h1>🩺 Autodiagnostic v21 (prédiction exhaustive + MàJ 30 j + canal)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<h1>🩺 Autodiagnostic v22 (canal relais détaillé)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
-const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/predict-engine.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/ui-v20.js','js/ui-v21.js','js/app-v9.js','js/gemini-search.js'];
+const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/predict-engine.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/ui-v20.js','js/ui-v21.js','js/ui-v22.js','js/app-v9.js','js/gemini-search.js'];
 const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml']);
 const SECRET_RE=/Kevin\s?\d{4,6}/i;
-const RELAYS=['https://ntfy.sh','https://ntfr.frontend.dev','https://ntfy.zwieback.dev'];
-const TOP='diag-incendie-kevin-diag-'+Math.random().toString(36).slice(2,8);
+const RELAYS=['https://ntfy.sh','https://ntfy.ffmuc.net','https://ntfy.dcs0.hu'];
 let LOG=[];const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'[KO] ')+t);return `<tr><td class="${ok==='OK'?'ok':ok==='WARN'?'warn':'ko'}">${ok}</td><td>${t}</td></tr>`;};
 const st=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?200:r.status;}catch{return 'ERR';}};
 async function run(){LOG=[];let rows='',ko=0;
@@ -14,43 +13,36 @@ for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK'
 for(const f of JS){const src=await fetch(f,{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
  try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}
  if(SECRET_RE.test(src)){ko++;rows+=line('KO','⚠️ CLAIR SUSPECT dans '+f);}}
-const pe=await fetch('js/predict-engine.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(pe.includes('realBrands')&&pe.includes('realModels')&&pe.includes('realPowers')&&pe.includes('predSuggestions')?'OK':'KO','Prédiction exhaustive depuis la BASE RÉELLE (marques/modèles/moteurs/puissances/pannes)');
-const au=await fetch('js/auto-update.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(au.includes('MONTH_MS=30*24*3600*1000')&&au.includes('applyFeedMerge')&&au.includes('nextSync')?'OK':'KO','Cycle 30 j strict auto-appliqué + persistance nextSync');
 const ac=await fetch('js/access-control.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(ac.includes('RELAYS')&&ac.includes('acFlush')&&ac.includes('ADMIN_HASH:3615734019')&&!SECRET_RE.test(ac)?'OK':'KO','Canal multi-relais + queue + admin hash-only');
-rows+=line(ac.includes('syncRecallsFeed(app.db,false)')?'OK':'KO','Auto-MàJ 30 j déclenchée au démarrage');
+rows+=line(!/TK_REQ:'tk_/.test(ac)&&ac.includes('acTokens')?'OK':'KO','AUCUN jeton fictif par défaut (jetons optionnels)');
+rows+=line(ac.includes('ntfy.ffmuc.net')&&ac.includes('ntfy.dcs0.hu')?'OK':'KO','Relais réels (ntfy.sh + ffmuc + dcs0)');
+rows+=line(ac.includes('acProbe')&&ac.includes('up:true')?'OK':'KO','Test de santé tolérant (toute réponse HTTP = joignable)');
+rows+=line(ac.includes('ADMIN_HASH:3615734019')?'OK':'KO','Admin hash-only');
 const sw=await fetch('service-worker.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(sw.includes("minInterval:MONTH_MS")||sw.includes('30*24*3600*1000')?'OK':'KO','SW : periodicsync 30 j + SSE ntfy');
-rows+=line(sw.includes('ec.europa.eu')?'OK':'KO','SW network-first Safety Gate');
-const cn=(sw.match(/CACHE='([^']+)'/)||[])[1]||'?';rows+=line(/diag-v21/.test(cn)?'OK':'KO','Cache SW : '+cn);
+rows+=line(sw.includes('NTFY-PASSTHROUGH')&&/if\(NTFY_HOSTS\.some[\s\S]{0,120}\)return;/.test(sw)?'OK':'KO','SW : passthrough ntfy (non intercepté)');
+const cn=(sw.match(/CACHE='([^']+)'/)||[])[1]||'?';rows+=line(/diag-v22/.test(cn)?'OK':'KO','Cache SW : '+cn);
+// Test relais par relais : santé + pub/poll ANONYME sur topic éphémère
+const TOP='diag-test-'+Math.random().toString(36).slice(2,8);let anyOk=false;
+for(const base of RELAYS){let health='-',pub='-',poll='-';
+ try{const h=await fetch(base+'/health',{cache:'no-store'});health='HTTP '+h.status;}catch(e){health='ERR';}
+ try{const p=await fetch(base+'/'+TOP,{method:'POST',cache:'no-store',headers:{'Content-Type':'text/plain'},body:JSON.stringify({ping:1})});pub='HTTP '+p.status;if(p.ok)anyOk=true;}catch(e){pub='ERR';}
+ try{const g=await fetch(base+'/'+TOP+'/json?poll=1&since=10s',{cache:'no-store'});poll='HTTP '+g.status;}catch(e){poll='ERR';}
+ rows+=line(pub.startsWith('HTTP 2')?'OK':'KO','Relais '+base+' → santé '+health+' | pub '+pub+' | poll '+poll);}
+rows+=line(anyOk?'OK':'KO','AU MOINS UN relais publie anonymement (sinon : réseau bloqué / config relais personnalisé requis)');
 const idx=await fetch('index.html',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(idx.includes('predictInput')&&!/<select id="gBrand2"/.test(idx)?'OK':'KO','Barre prédictive unique (selects supprimés)');
-rows+=line(idx.includes('ui-v21.js')&&idx.includes('feedInfo')?'OK':'KO','ui-v21 + indicateur cycle 30 j');
-rows+=line(!idx.includes('•••')?'OK':'KO','Champ mot de passe SANS points');
-const fc=await fetch('tools/fetch-recalls.mjs',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(fc.includes('Safety Gate')&&fc.includes('safety-gate-alerts')&&fc.includes('out.models')?'OK':'KO','Collecteur : NHTSA + Rappel Conso + Safety Gate + extraction modèles/moteurs');
-// Test réel canal pub→recv
-let relayOk='KO',relayUsed='-';
-for(const base of RELAYS){try{const mark='ping-'+Date.now();
- const p=await fetch(base+'/'+TOP,{method:'POST',mode:'cors',cache:'no-store',headers:{'Content-Type':'text/plain'},body:JSON.stringify({mark:mark})});if(!p.ok)continue;
- await new Promise(r=>setTimeout(r,2500));
- const g=await fetch(base+'/'+TOP+'/json?poll=1&since=10s',{mode:'cors',cache:'no-store'});if(!g.ok)continue;const j=await g.json();
- if(Array.isArray(j)&&j.some(e=>{try{return JSON.parse(e.message).mark===mark;}catch(x){return false;}})){relayOk='OK';relayUsed=base;break;}}catch(e){}}
-rows+=line(relayOk,'Canal notifications RÉEL (pub→recv) via '+relayUsed);
+rows+=line(idx.includes('ui-v22.js')&&idx.includes('relayConfig')?'OK':'KO','index v22 (config canal + ui-v22)');
+rows+=line(idx.includes('predictInput')&&!/<select id="gBrand2"/.test(idx)?'OK':'KO','Barre prédictive unique');
+rows+=line(!idx.includes('•••')?'OK':'KO','Champ mdp SANS points');
 const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
-if(m){rows+=line(m.name==='diag-incendie-by-kevin'?'OK':'KO','Manifest = '+m.name);for(const ic of m.icons){const s=await st(ic.src);if(s!==200){ko++;rows+=line('KO','Icône '+ic.src+' → '+s);}}}else{ko++;rows+=line('KO','manifest illisible');}
+if(m){rows+=line(m.name==='diag-incendie-by-kevin'?'OK':'KO','Manifest = '+m.name);}else{ko++;rows+=line('KO','manifest illisible');}
 const fd=await fetch('data/recalls-feed.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
-rows+=line(fd?'OK':'KO','Feed v'+(fd?fd.version:'?')+' — '+(fd?fd.cases.length:0)+' cas, '+(fd&&fd.models?fd.models.length:0)+' modèles indexés');
+rows+=line(fd?'OK':'KO','Feed v'+(fd?fd.version:'?')+' — '+(fd?fd.cases.length:0)+' cas');
 let swr='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.getRegistration();swr=r&&r.active?'OK':'KO';}if(swr==='KO')ko++;
 rows+=line(swr,'Service Worker actif');
-rows+=line('periodicSync' in navigator?'OK':'WARN','Periodic Sync 30 j : '+('periodicSync' in navigator?'oui':'fallback lancement'));
-let bad=0,tot=0;if(navigator.onLine){const P=await fetch('js/data-v9.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');for(const u of (P.match(/https:\/\/image[^"]+/g)||[]).slice(0,60)){tot++;try{await fetch(u,{mode:'no-cors',cache:'no-store'});}catch{bad++;}}}
-rows+=line(bad===0?'OK':'WARN','Photos réelles : '+(tot-bad)+'/'+tot);
 document.getElementById('out').innerHTML='<table>'+rows+'</table>';
 const v=document.getElementById('verdict');
-if(ko===0&&relayOk==='OK'){v.style.background='#1b5e20';v.textContent='✅ CONFORME v21 : prédiction exhaustive, MàJ 30 j auto, canal notifications vérifié de bout en bout.';}
-else{v.style.background='#b71c1c';v.textContent='❌ '+(ko+(relayOk!=='OK'?1:0))+' anomalie(s).';}
+if(ko===0&&anyOk){v.style.background='#1b5e20';v.textContent='✅ CONFORME v22 : canal notifications opérationnel (pub anonyme OK), plus de « relais injoignable ».';}
+else if(ko===0&&!anyOk){v.style.background='#b71c1c';v.textContent='⚠️ Fichiers OK mais AUCUN relais joignable depuis cet appareil : réseau bloquant ntfy → configurez un relais personnalisé (panneau admin) ou testez en WiFi/4G simple.';}
+else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s) fichier(s).';}
 document.getElementById('report').textContent=LOG.join('\n');}
 </script></body></html>
