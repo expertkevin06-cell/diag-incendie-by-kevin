@@ -1,7 +1,7 @@
 name: monthly-recalls-update
 on:
   schedule:
-    - cron: '0 6 1 * *'   # 1er du mois 06:00 UTC → nouveaux cas poussés vers l'APK
+    - cron: '0 6 1 * *'   # 1er du mois 06:00 UTC (= cycle ~30 j)
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - name: Collecte NHTSA (recalls + complaints élec/carburant) + Rappel Conso
+      - name: Collecte NHTSA + Rappel Conso + Safety Gate (+ modèles/moteurs)
         run: node tools/fetch-recalls.mjs
       - name: Commit du feed
         run: |
