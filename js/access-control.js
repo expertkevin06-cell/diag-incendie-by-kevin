@@ -1,22 +1,22 @@
 // ================================================================
-// CONTRÔLE D’ACCÈS v23 — DOUBLE TRANSPORT :
-//  A) GitHub Issues (primaire, toujours joignable, lecture sans jeton)
-//  B) ntfy multi-relais (secours)
-// CONFIG : créer un jeton fine-grained « Issues: Read and write »
-// sur le dépôt MB.REPO puis coller sa valeur dans MB.TOKEN ci-dessous.
+// CONTRÔLE D’ACCÈS v24 — REGISTRE FUSIONNÉ GitHub Issues + ntfy
+// Le panneau admin voit TOUTES les demandes, quel que soit le transport
 // ================================================================
 var AC={
  MB:{OWNER:'expertkevin06-cell',REPO:'diag-incendie',TOKEN:''},
  RELAYS_DEFAULT:['https://ntfy.sh','https://ntfy.ffmuc.net','https://ntfy.dcs0.hu'],
  REQ:'diag-incendie-kevin-req-83600',DEC:'diag-incendie-kevin-dec-83600',REL:'diag-incendie-kevin-rel-83600',PING:'diag-incendie-kevin-ping-83600',
- ADMIN_HASH:3615734019,state:null,requests:[],pollTimer:null,netTimer:null,tries:0,lockUntil:0,relayIdx:0,queue:[],
+ ADMIN_HASH:3615734019,state:null,requests:[],registry:{},pollTimer:null,netTimer:null,tries:0,lockUntil:0,relayIdx:0,queue:[],
  relayStatus:{ok:false,relay:'-',detail:'non testé'},_lastTest:0,_failStreak:0};
 function acHash(s){var h=5381;for(var i=0;i<s.length;i++){h=(Math.imul(h,33)+s.charCodeAt(i))|0;}return h>>>0;}
 function acDevice(){var d=localStorage.getItem('acDevice');if(!d){d='dev-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);localStorage.setItem('acDevice',d);}return d;}
 function acLoad(){try{AC.state=JSON.parse(localStorage.getItem('acState')||'null')||{role:'locked',name:''};}catch(e){AC.state={role:'locked',name:''};}
- try{AC.queue=JSON.parse(localStorage.getItem('acQueue')||'[]');}catch(e){AC.queue=[];}return AC.state;}
+ try{AC.queue=JSON.parse(localStorage.getItem('acQueue')||'[]');}catch(e){AC.queue=[];}
+ try{AC.registry=JSON.parse(localStorage.getItem('acReqRegistry')||'{}');}catch(e){AC.registry={};}return AC.state;}
 function acSave(){localStorage.setItem('acState',JSON.stringify(AC.state));}
 function acSaveQueue(){localStorage.setItem('acQueue',JSON.stringify(AC.queue.slice(-50)));}
+function acSaveRegistry(){var ks=Object.keys(AC.registry).sort(function(a,b){return AC.registry[b].ts-AC.registry[a].ts;}).slice(0,200);
+ var o={};ks.forEach(function(k){o[k]=AC.registry[k];});AC.registry=o;localStorage.setItem('acReqRegistry',JSON.stringify(o));}
 function acUnlocked(){return !!(AC.state&&(AC.state.role==='admin'||AC.state.role==='granted'));}
 function acRelays(){var out=[];var c=localStorage.getItem('acRelay');if(c)out.push(c);AC.RELAYS_DEFAULT.forEach(function(r){if(out.indexOf(r)<0)out.push(r);});return out;}
 function acTokens(){try{return JSON.parse(localStorage.getItem('acTokens')||'{}');}catch(e){return {};}}
@@ -27,18 +27,20 @@ function acNotify(title,body){AC.banner(title+' — '+body);try{if('Notification
 function acAskNotif(){try{if('Notification' in window&&Notification.permission!=='granted')Notification.requestPermission();}catch(e){}}
 function acMakeSignal(ms){try{if(typeof AbortController==='undefined')return null;var c=new AbortController();var t=setTimeout(function(){try{c.abort();}catch(e){}},ms||10000);return {sig:c.signal,clear:function(){clearTimeout(t);}};}catch(e){return null;}}
 async function acFetch(url,opts,ms){var o={};if(opts)for(var k in opts)o[k]=opts[k];var s=acMakeSignal(ms);if(s&&s.sig)o.signal=s.sig;try{return await fetch(url,o);}finally{if(s)s.clear();}}
-// ---- Transport GitHub Issues ----
+// ---- GitHub Issues ----
 function ghUrl(p){return 'https://api.github.com/repos/'+AC.MB.OWNER+'/'+AC.MB.REPO+p;}
 function ghAuth(h){if(AC.MB.TOKEN)h['Authorization']='Bearer '+AC.MB.TOKEN;return h;}
-async function ghCreateIssue(payload){try{var r=await acFetch(ghUrl('/issues'),{method:'POST',mode:'cors',cache:'no-store',headers:ghAuth({'Content-Type':'application/json','Accept':'application/vnd.github+json'}),body:JSON.stringify({title:'ACCESS-REQUEST '+payload.name,body:JSON.stringify(payload),labels:['access']})},12000);
+async function ghCreateIssue(payload){if(!AC.MB.TOKEN)return null;
+ try{var r=await acFetch(ghUrl('/issues'),{method:'POST',mode:'cors',cache:'no-store',headers:ghAuth({'Content-Type':'application/json','Accept':'application/vnd.github+json'}),body:JSON.stringify({title:'ACCESS-REQUEST '+payload.name,body:JSON.stringify(payload),labels:['access']})},12000);
  if(r&&r.ok){var j=await r.json();return j.number;}}catch(e){}return null;}
 async function ghListIssues(){try{var r=await acFetch(ghUrl('/issues?labels=access&state=all&per_page=100'),{mode:'cors',cache:'no-store',headers:{'Accept':'application/vnd.github+json'}},12000);
  if(r&&r.ok)return await r.json();}catch(e){}return [];}
 async function ghComments(num){try{var r=await acFetch(ghUrl('/issues/'+num+'/comments'),{mode:'cors',cache:'no-store',headers:{'Accept':'application/vnd.github+json'}},12000);
  if(r&&r.ok)return await r.json();}catch(e){}return [];}
-async function ghComment(num,payload){try{var r=await acFetch(ghUrl('/issues/'+num+'/comments'),{method:'POST',mode:'cors',cache:'no-store',headers:ghAuth({'Content-Type':'application/json','Accept':'application/vnd.github+json'}),body:JSON.stringify({body:JSON.stringify(payload)})},12000);
+async function ghComment(num,payload){if(!AC.MB.TOKEN||!num)return false;
+ try{var r=await acFetch(ghUrl('/issues/'+num+'/comments'),{method:'POST',mode:'cors',cache:'no-store',headers:ghAuth({'Content-Type':'application/json','Accept':'application/vnd.github+json'}),body:JSON.stringify({body:JSON.stringify(payload)})},12000);
  return !!(r&&r.ok);}catch(e){return false;}}
-// ---- Transport ntfy (secours) ----
+// ---- ntfy ----
 function acHeaders(tk){var h={'Content-Type':'text/plain','Title':'diag-incendie'};var t=acTokens();var v=tk==='req'?t.req:tk==='dec'?t.dec:t.rel;if(v)h['Authorization']='Bearer '+v;return h;}
 async function acProbe(base){try{var r1=await acFetch(base+'/health',{mode:'cors',cache:'no-store'},8000);return {up:true,status:r1.status};}catch(e){}
  try{var r2=await acFetch(base+'/',{method:'HEAD',mode:'cors',cache:'no-store'},8000);return {up:true,status:r2.status};}catch(e){}
@@ -46,7 +48,7 @@ async function acProbe(base){try{var r1=await acFetch(base+'/health',{mode:'cors
 async function acTestChannel(force){var now=Date.now();if(!force&&AC._lastTest&&(now-AC._lastTest)<60000)return AC.relayStatus;AC._lastTest=now;
  var relays=acRelays(),detail=[];
  for(var r=0;r<relays.length;r++){var p=await acProbe(relays[r]);if(p.up){AC.relayIdx=r;AC._failStreak=0;AC.relayStatus={ok:true,relay:relays[r],detail:relays[r]+' → HTTP '+p.status};return AC.relayStatus;}detail.push(relays[r]+' → down');}
- AC.relayStatus={ok:false,relay:'aucun',detail:detail.join(' | ')};return AC.relayStatus;}
+ AC._failStreak++;AC.relayStatus={ok:false,relay:'aucun',detail:detail.join(' | ')};return AC.relayStatus;}
 async function acPub(topic,tk,obj){AC.queue.push({topic:topic,tk:tk,obj:obj,ts:Date.now()});acSaveQueue();return await acFlush();}
 async function acFlush(){var pending=AC.queue.slice();if(!pending.length)return true;var relays=acRelays(),progressed=false;
  for(var i=0;i<pending.length;i++){var m=pending[i],delivered=false;
@@ -62,16 +64,19 @@ async function acPoll(topic,tk,since){var relays=acRelays();
  return [];}
 function acParse(ev){try{return JSON.parse(ev.message||ev.body||'{}');}catch(e){return null;}}
 function acPersistBase(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}}
-// ---- Tiers : demande via GitHub PUIS ntfy ----
+function acRegister(d,source,issue){if(!d||!d.device)return;var old=AC.registry[d.device]||{};
+ AC.registry[d.device]={device:d.device,name:d.name||old.name||'?',ts:Math.max(d.ts||0,old.ts||0),ua:d.ua||old.ua||'',issue:issue||old.issue||null,source:source};
+ acSaveRegistry();}
+// ---- Tiers ----
 async function acRequest(name){if(!name||name.length<2){AC.banner('⚠️ Indiquez un nom ou prénom');return;}
  var dev=acDevice();var payload={device:dev,name:name,ts:Date.now(),ua:(navigator.userAgent||'').slice(0,60)};
  var issue=await ghCreateIssue(payload);
- var ntfyOk=false;if(!issue){var t=await acTestChannel(true);ntfyOk=t.ok?await acPub(AC.REQ,'req',payload):false;}
+ var ntfyOk=false;{var t=await acTestChannel(true);ntfyOk=t.ok?await acPub(AC.REQ,'req',payload):false;}
  AC.state={role:'pending',name:name,device:dev,since:Date.now(),issue:issue,feedVersion:AC.state&&AC.state.feedVersion||0};acSave();acApplyGate();acStartPolling();
- AC.banner(issue?'📨 Demande envoyée (ticket #'+issue+')':'📨 Demande envoyée via relais secours'+(ntfyOk?'':' (en file)'));}
+ AC.banner(issue?'📨 Demande envoyée (ticket #'+issue+')':(ntfyOk?'📨 Demande envoyée via relais ntfy':'📡 Demande en file — renvoi auto'));}
 async function acCheckDecisions(){
  if(AC.state&&AC.state.issue){var cs=await ghComments(AC.state.issue);
-  for(var i=0;i<cs.length;i++){var d=acParse(cs[i]);if(!d||!d.status)continue;applyDecision(d);}}
+  for(var i=0;i<cs.length;i++){var d=acParse(cs[i]);if(d&&d.status)applyDecision(d);}}
  var evs=await acPoll(AC.DEC,'dec',AC.state&&AC.state.since?Math.floor(AC.state.since/1000)-180:'all');
  evs.forEach(function(ev){var d=acParse(ev);if(d&&d.device===acDevice())applyDecision(d);});}
 function applyDecision(d){
@@ -84,30 +89,34 @@ async function acCheckReleases(){var evs=await acPoll(AC.REL,'rel','30d');var la
   try{var r=await acFetch('data/recalls-feed.json?v='+Date.now(),{cache:'no-store'},10000);if(r&&r.ok){var feed=await r.json();
    if(window.applyFeedMerge){var added=applyFeedMerge(feed);if(window.applyFeedCatalog)added+=applyFeedCatalog(feed);AC.state.feedVersion=latest.version;acSave();
     acNotify('🔄 Mise à jour appliquée','v'+latest.version+' (+'+added+')');if(typeof renderRecalls==='function')renderRecalls(RECALLS);}}}catch(e){}}}
-// ---- Admin ----
-async function acAdminLogin(pw){if(Date.now()<AC.lockUntil){AC.banner('⛔ Trop de tentatives');return false;}
- var input=document.getElementById('gatePwd');var ok=acHash(String(pw||''))===AC.ADMIN_HASH;if(input)input.value='';
- if(ok){AC.tries=0;AC.state={role:'admin',name:'Kevin',since:Date.now(),feedVersion:AC.state&&AC.state.feedVersion||0};acSave();acAskNotif();acApplyGate();acStartPolling();return true;}
- AC.tries++;if(AC.tries>=5){AC.lockUntil=Date.now()+30000;AC.tries=0;}return false;}
-async function acAdminRefresh(){var list=await ghListIssues();var map={};
+// ---- Admin : REGISTRE FUSIONNÉ GitHub + ntfy ----
+async function acAdminRefresh(){
+ var list=await ghListIssues();
  list.forEach(function(it){var d=null;try{d=JSON.parse(it.body);}catch(e){}
-  if(d&&d.device)map[d.device]={device:d.device,name:d.name,ts:d.created_at?new Date(d.created_at).getTime():Date.now(),ua:d.ua||'',issue:it.number};});
+  if(d&&d.device)acRegister(d,'github',it.number);});
+ var evs=await acPoll(AC.REQ,'req','all');
+ evs.forEach(function(ev){var d=acParse(ev);if(d&&d.device)acRegister(d,'ntfy',d.issue||null);});
  var grants={};try{grants=JSON.parse(localStorage.getItem('acGrants')||'{}');}catch(e){}
- AC.requests=Object.keys(map).map(function(k){var d=map[k];d.grant=grants[k]||null;return d;}).sort(function(a,b){return b.ts-a.ts;});
- var prev=localStorage.getItem('acReqCount')||'0';if(AC.requests.length>parseInt(prev,10)&&AC.requests[0])acNotify('🔔 Nouvelle demande',AC.requests[0].name);
+ AC.requests=Object.keys(AC.registry).map(function(k){var d=AC.registry[k];d.grant=grants[k]||null;d.status=grants[k]?grants[k].status:'new';return d;})
+  .sort(function(a,b){return b.ts-a.ts;});
+ var prev=localStorage.getItem('acReqCount')||'0';
+ if(AC.requests.length>parseInt(prev,10)&&AC.requests[0])acNotify('🔔 Nouvelle demande',AC.requests[0].name);
  localStorage.setItem('acReqCount',String(AC.requests.length));
+ await acFlush();
  if(typeof renderAdmin==='function')renderAdmin();}
 async function acDecide(device,name,status,issue){
- var okGh=false;if(issue)okGh=await ghComment(issue,{device:device,name:name,status:status,ts:Date.now()});
+ var okGh=await ghComment(issue||((AC.registry[device]||{}).issue),{device:device,name:name,status:status,ts:Date.now()});
  var okNtfy=await acPub(AC.DEC,'dec',{device:device,name:name,status:status,ts:Date.now()});
  var g={};try{g=JSON.parse(localStorage.getItem('acGrants')||'{}');}catch(e){}g[device]={name:name,status:status,ts:Date.now()};localStorage.setItem('acGrants',JSON.stringify(g));
- acNotify(status==='approved'?'✅ Accordé : '+name:status==='revoked'?'⛔ Révoqué : '+name:'❌ Refusé : '+name,(okGh?'ticket #'+issue+' ':'')+(okNtfy?'+ relais':''));
+ if(AC.registry[device])AC.registry[device].status=status;acSaveRegistry();
+ acNotify(status==='approved'?'✅ Accordé : '+name:status==='revoked'?'⛔ Révoqué : '+name:'❌ Refusé : '+name,(okGh?'ticket + ':'')+(okNtfy?'relais':'file'));
  acAdminRefresh();return okGh||okNtfy;}
 async function acValidateRelease(version){var v=parseInt(version||'0',10);if(!v)return;
  await acPub(AC.REL,'rel',{type:'release',version:v,validated:true,ts:Date.now()});AC.state.feedVersion=v;acSave();AC.banner('✅ v'+v+' diffusée');}
 function acApplyGate(){var g=document.getElementById('gateOverlay');if(!g)return;
  if(acUnlocked()){g.style.display='none';document.body.classList.remove('locked');var ap=document.getElementById('adminPanel');if(ap)ap.style.display=(AC.state.role==='admin')?'block':'none';
-  if(AC.state.role==='admin'){acAdminRefresh();var rc=document.getElementById('relayStatus');if(rc)rc.innerHTML='🟢 Canal demandes : <strong>GitHub Issues</strong> (+ ntfy secours) — '+(AC.MB.TOKEN?'jeton configuré':'⚠️ jeton à configurer pour décider par ticket');}}
+  if(AC.state.role==='admin'){acAdminRefresh();var rc=document.getElementById('relayStatus');
+   if(rc)rc.innerHTML='🟢 Canal demandes : <strong>GitHub Issues + ntfy</strong> (registre fusionné) — '+(AC.MB.TOKEN?'jeton GH configuré':'jeton GH optionnel');}}
  else{g.style.display='flex';document.body.classList.add('locked');var st=document.getElementById('gateStatus');
   if(st)st.textContent=(AC.state.role==='pending')?'⏳ Demande '+(AC.state.issue?'ticket #'+AC.state.issue:'envoyée')+' ('+AC.state.name+') — attente admin…':'🔒 Application protégée — admin ou demande d’accès';
   var p=document.getElementById('gatePwd');if(p){p.value='';p.placeholder='Mot de passe';p.setAttribute('autocomplete','new-password');}}}
@@ -119,4 +128,4 @@ function acNetWatch(){if(AC.netTimer)return;AC.netTimer=setInterval(function(){v
   if(window.app&&app.db&&r.ok)syncRecallsFeed(app.db,false).then(function(x){if(x&&x.added){if(typeof renderRecalls==='function')renderRecalls(RECALLS);AC.banner('🔄 MàJ 30 j : +'+x.added);if(window.updateFeedInfo)updateFeedInfo();}});}).catch(function(){});},15000);}
 document.addEventListener('DOMContentLoaded',function(){acLoad();acPersistBase();var p=document.getElementById('gatePwd');if(p){p.value='';p.placeholder='Mot de passe';p.setAttribute('autocomplete','new-password');}
  acApplyGate();acStartPolling();acNetWatch();acAskNotif();
- console.log('✅ access-control v23 (GitHub Issues primaire + ntfy secours)');});
+ console.log('✅ access-control v24 (registre fusionné GitHub+ntfy)');});
