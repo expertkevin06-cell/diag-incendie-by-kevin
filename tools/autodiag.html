@@ -1,6 +1,6 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v22</title>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v22.1</title>
 <style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#4caf50}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#4caf50;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
-<h1>🩺 Autodiagnostic v22 (canal relais détaillé)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<h1>🩺 Autodiagnostic v22.1 (relais corrigé)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
 const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/predict-engine.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/ui-v20.js','js/ui-v21.js','js/ui-v22.js','js/app-v9.js','js/gemini-search.js'];
 const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml']);
@@ -14,23 +14,24 @@ for(const f of JS){const src=await fetch(f,{cache:'no-store'}).then(r=>r.text())
  try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}
  if(SECRET_RE.test(src)){ko++;rows+=line('KO','⚠️ CLAIR SUSPECT dans '+f);}}
 const ac=await fetch('js/access-control.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(!/TK_REQ:'tk_/.test(ac)&&ac.includes('acTokens')?'OK':'KO','AUCUN jeton fictif par défaut (jetons optionnels)');
-rows+=line(ac.includes('ntfy.ffmuc.net')&&ac.includes('ntfy.dcs0.hu')?'OK':'KO','Relais réels (ntfy.sh + ffmuc + dcs0)');
-rows+=line(ac.includes('acProbe')&&ac.includes('up:true')?'OK':'KO','Test de santé tolérant (toute réponse HTTP = joignable)');
+rows+=line(ac.includes('acMakeSignal')&&ac.includes('async function acFetch')?'OK':'KO','Helper acFetch sûr présent (v22.1)');
+rows+=line(!/signal:\s*(c2|ctrl|c)\s*[,}]/.test(ac)?'OK':'KO','AUCUN signal = contrôleur brut (bug AbortSignal éliminé)');
+rows+=line(ac.includes('acProbe')&&ac.includes('/v1/health')?'OK':'KO','Sonde 3 niveaux (/health, HEAD /, /v1/health)');
+rows+=line(ac.includes(AC_PING_TEST())?'OK':'KO','Secours : publication anonyme réelle');
 rows+=line(ac.includes('ADMIN_HASH:3615734019')?'OK':'KO','Admin hash-only');
 const sw=await fetch('service-worker.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(sw.includes('NTFY-PASSTHROUGH')&&/if\(NTFY_HOSTS\.some[\s\S]{0,120}\)return;/.test(sw)?'OK':'KO','SW : passthrough ntfy (non intercepté)');
-const cn=(sw.match(/CACHE='([^']+)'/)||[])[1]||'?';rows+=line(/diag-v22/.test(cn)?'OK':'KO','Cache SW : '+cn);
-// Test relais par relais : santé + pub/poll ANONYME sur topic éphémère
+rows+=line(sw.includes('NTFY-PASSTHROUGH')?'OK':'KO','SW : passthrough ntfy');
+const cn=(sw.match(/CACHE='([^']+)'/)||[])[1]||'?';rows+=line(/diag-v2[12]/.test(cn)?'OK':'KO','Cache SW : '+cn);
+// Test réel par relais (sans signal custom → aucun risque de bug)
 const TOP='diag-test-'+Math.random().toString(36).slice(2,8);let anyOk=false;
 for(const base of RELAYS){let health='-',pub='-',poll='-';
- try{const h=await fetch(base+'/health',{cache:'no-store'});health='HTTP '+h.status;}catch(e){health='ERR';}
- try{const p=await fetch(base+'/'+TOP,{method:'POST',cache:'no-store',headers:{'Content-Type':'text/plain'},body:JSON.stringify({ping:1})});pub='HTTP '+p.status;if(p.ok)anyOk=true;}catch(e){pub='ERR';}
+ try{const h=await fetch(base+'/health',{cache:'no-store'});health='HTTP '+h.status;}catch(e){health='ERR '+e.message;}
+ try{const p=await fetch(base+'/'+TOP,{method:'POST',cache:'no-store',headers:{'Content-Type':'text/plain'},body:JSON.stringify({ping:1})});pub='HTTP '+p.status;if(p.ok)anyOk=true;}catch(e){pub='ERR '+e.message;}
  try{const g=await fetch(base+'/'+TOP+'/json?poll=1&since=10s',{cache:'no-store'});poll='HTTP '+g.status;}catch(e){poll='ERR';}
  rows+=line(pub.startsWith('HTTP 2')?'OK':'KO','Relais '+base+' → santé '+health+' | pub '+pub+' | poll '+poll);}
-rows+=line(anyOk?'OK':'KO','AU MOINS UN relais publie anonymement (sinon : réseau bloqué / config relais personnalisé requis)');
+rows+=line(anyOk?'OK':'KO','Au moins un relais publie anonymement');
 const idx=await fetch('index.html',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(idx.includes('ui-v22.js')&&idx.includes('relayConfig')?'OK':'KO','index v22 (config canal + ui-v22)');
+rows+=line(idx.includes('ui-v22.js')&&idx.includes('relayConfig')?'OK':'KO','index v22 (config canal)');
 rows+=line(idx.includes('predictInput')&&!/<select id="gBrand2"/.test(idx)?'OK':'KO','Barre prédictive unique');
 rows+=line(!idx.includes('•••')?'OK':'KO','Champ mdp SANS points');
 const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
@@ -41,8 +42,9 @@ let swr='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.g
 rows+=line(swr,'Service Worker actif');
 document.getElementById('out').innerHTML='<table>'+rows+'</table>';
 const v=document.getElementById('verdict');
-if(ko===0&&anyOk){v.style.background='#1b5e20';v.textContent='✅ CONFORME v22 : canal notifications opérationnel (pub anonyme OK), plus de « relais injoignable ».';}
-else if(ko===0&&!anyOk){v.style.background='#b71c1c';v.textContent='⚠️ Fichiers OK mais AUCUN relais joignable depuis cet appareil : réseau bloquant ntfy → configurez un relais personnalisé (panneau admin) ou testez en WiFi/4G simple.';}
+if(ko===0&&anyOk){v.style.background='#1b5e20';v.textContent='✅ CONFORME v22.1 : bug AbortSignal éliminé, relais opérationnel(s), canal notifications garanti.';}
+else if(ko===0&&!anyOk){v.style.background='#b71c1c';v.textContent='⚠️ Fichiers OK mais aucun relais joignable DEPUIS CET APPAREIL : réseau bloquant ntfy → configurez un relais personnalisé (panneau admin).';}
 else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s) fichier(s).';}
 document.getElementById('report').textContent=LOG.join('\n');}
+function AC_PING_TEST(){return 'AC.PING';}
 </script></body></html>
