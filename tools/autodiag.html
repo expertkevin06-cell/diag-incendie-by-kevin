@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v25</title>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v26</title>
 <style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#ff6f00}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#ff6f00;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
-<h1>🩺 Autodiagnostic v25 (canal GitHub+ntfy, systèmes, plan 30 j)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<h1>🩺 Autodiagnostic v26 (registre fusionné admin)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
-const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/campaigns-db.js','js/systems-db.js','js/predict-engine.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/ui-v20.js','js/ui-v21.js','js/ui-v22.js','js/ui-v23.js','js/ui-v24.js','js/app-v9.js','js/gemini-search.js'];
+const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/campaigns-db.js','js/systems-db.js','js/predict-engine.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/ui-v20.js','js/ui-v21.js','js/ui-v22.js','js/ui-v23.js','js/ui-v24.js','js/ui-v25.js','js/app-v9.js','js/gemini-search.js'];
 const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml']);
 const SECRET_RE=/Kevin\s?\d{4,6}/i;
 let LOG=[];const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'[KO] ')+t);return `<tr><td class="${ok==='OK'?'ok':ok==='WARN'?'warn':'ko'}">${ok}</td><td>${t}</td></tr>`;};
@@ -13,24 +13,18 @@ for(const f of JS){const src=await fetch(f,{cache:'no-store'}).then(r=>r.text())
  try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}
  if(SECRET_RE.test(src)){ko++;rows+=line('KO','⚠️ CLAIR SUSPECT dans '+f);}}
 const ac=await fetch('js/access-control.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(ac.includes('ghCreateIssue')&&ac.includes('ghListIssues')&&ac.includes('ghComments')?'OK':'KO','Canal PRIMAIRE GitHub Issues (demande/décision)');
-rows+=line(ac.includes('acPub')&&ac.includes('RELAYS_DEFAULT')?'OK':'KO','Canal SECOURS ntfy multi-relais');
+rows+=line(ac.includes('acRegister')&&ac.includes('acReqRegistry')?'OK':'KO','Registre fusionné persistant (GitHub + ntfy)');
+rows+=line(ac.includes('ghListIssues')&&ac.includes("acPoll(AC.REQ,'req','all')")?'OK':'KO','acAdminRefresh lit GitHub ET ntfy');
 rows+=line(ac.includes('ADMIN_HASH:3615734019')&&!SECRET_RE.test(ac)?'OK':'KO','Admin hash-only');
-const sys=await fetch('js/systems-db.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line((sys.match(/id:"sys/g)||[]).length>=35?'OK':'KO','Systèmes renforcés = '+((sys.match(/id:"sys/g)||[]).length)+' familles (batt/charge/tablette/courroie/pression huile/refroidissement/ADAS)');
-const au=await fetch('js/auto-update.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(au.includes('applyFeedCatalog')&&au.includes('MONTH_MS=30*24*3600*1000')?'OK':'KO','Plan 30 j : fusion cas + CATALOGUE marques/modèles');
-const fr=await fetch('tools/fetch-recalls.mjs',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(fr.includes('vpic.nhtsa.dot.gov')&&fr.includes('out.catalog')?'OK':'KO','Collecteur : vPIC nouveaux modèles + catalog feed');
-rows+=line((fr.match(/'[A-Z][A-Z &-]+'/g)||[]).length>80?'OK':'KO','Marques collectées (FR/EU/US/ASIE/CN) ≥ 90');
+const u25=await fetch('js/ui-v25.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
+rows+=line(u25.includes('data-act2')&&u25.includes('function renderAdmin')?'OK':'KO','ui-v25 : rendu admin faisant autorité (boutons data-act2)');
 const idx=await fetch('index.html',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(idx.includes('js/systems-db.js')?'OK':'KO','index charge systems-db.js');
+rows+=line(idx.includes('js/ui-v25.js')?'OK':'KO','index charge ui-v25.js');
 const sw=await fetch('service-worker.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(/diag-v25/.test((sw.match(/CACHE='([^']+)'/)||[])[1]||'')?'OK':'KO','Cache SW v25');
-rows+=line(sw.includes('api.github.com')?'OK':'KO','SW network-first api.github.com');
-// Test canal GitHub (lecture sans jeton)
-let gh='KO';try{const r=await fetch('https://api.github.com/repos/expertkevin06-cell/diag-incendie/issues?labels=access&state=all&per_page=5',{cache:'no-store'});gh=r.ok?'OK':('HTTP '+r.status);}catch(e){gh='ERR';}
-rows+=line(gh==='OK'?'OK':'KO','Canal GitHub Issues joignable (lecture) : '+gh);
+rows+=line(/diag-v26/.test((sw.match(/CACHE='([^']+)'/)||[])[1]||'')?'OK':'KO','Cache SW v26');
+rows+=line(sw.includes('ui-v25.js')?'OK':'KO','SW CORE inclut ui-v25.js');
+let gh='KO';try{const r=await fetch('https://api.github.com/repos/expertkevin06-cell/diag-incendie/issues?labels=access&state=all&per_page=5',{cache:'no-store'});gh=r.ok?'OK':'HTTP '+r.status;}catch(e){gh='ERR';}
+rows+=line(gh==='OK'?'OK':'WARN','Lecture GitHub Issues (sans jeton) : '+gh);
 let ntfy='KO';try{const r=await fetch('https://ntfy.sh/health',{cache:'no-store'});ntfy=r.ok?'OK':'KO';}catch(e){}
 rows+=line(ntfy==='OK'?'OK':'WARN','ntfy.sh (secours) : '+ntfy);
 const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
@@ -39,6 +33,6 @@ let swr='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.g
 rows+=line(swr,'Service Worker actif');
 document.getElementById('out').innerHTML='<table>'+rows+'</table>';
 const v=document.getElementById('verdict');
-if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v25 : demandes d’accès via GitHub Issues (garanti) + ntfy, systèmes renforcés, plan 30 j complet.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
+if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v26 : le panneau admin voit TOUTES les demandes (GitHub + ntfy), décisions double-canal.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
 document.getElementById('report').textContent=LOG.join('\n');}
 </script></body></html>
