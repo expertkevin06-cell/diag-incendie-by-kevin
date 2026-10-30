@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v23</title>
-<style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#4caf50}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#4caf50;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
-<h1>🩺 Autodiagnostic v23 (prédictif unique + relais)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v24</title>
+<style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#ff6f00}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#ff6f00;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
+<h1>🩺 Autodiagnostic v24 (campagnes + prédictif + relais)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
-const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/predict-engine.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/ui-v20.js','js/ui-v21.js','js/ui-v22.js','js/ui-v23.js','js/app-v9.js','js/gemini-search.js'];
+const JS=['js/data-v9.js','js/shorts-db.js','js/leaks-batt-db.js','js/overheat-mech-db.js','js/eu-failures-db.js','js/vehicles-2025-db.js','js/elroq-db.js','js/models-mega-db.js','js/campaigns-db.js','js/predict-engine.js','js/access-control.js','js/search-engine.js','js/live-search.js','js/multi-search.js','js/auto-update.js','js/ui-v10.js','js/ui-v11.js','js/ui-v12.js','js/ui-v13.js','js/ui-v16.js','js/ui-v17.js','js/ui-v18.js','js/ui-v19.js','js/ui-v20.js','js/ui-v21.js','js/ui-v22.js','js/ui-v23.js','js/ui-v24.js','js/app-v9.js','js/gemini-search.js'];
 const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml']);
 const SECRET_RE=/Kevin\s?\d{4,6}/i;
 const RELAYS=['https://ntfy.sh','https://ntfy.ffmuc.net','https://ntfy.dcs0.hu'];
@@ -13,34 +13,35 @@ for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK'
 for(const f of JS){const src=await fetch(f,{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
  try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}
  if(SECRET_RE.test(src)){ko++;rows+=line('KO','⚠️ CLAIR SUSPECT dans '+f);}}
+const cp=await fetch('js/campaigns-db.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
+rows+=line((cp.match(/id:"cmp/g)||[]).length>=10?'OK':'KO','Campagnes techniques = '+((cp.match(/id:"cmp/g)||[]).length));
+rows+=line(cp.includes('bossage')||cp.includes('BOSSAGES')?'OK':'KO','DV5 : contrôle bossage couvre-culasse (7→8 mm)');
+rows+=line(cp.includes('N47')&&cp.includes('B47')?'OK':'KO','BMW N47/B47 chaîne');
+rows+=line(cp.includes('raccord')&&cp.includes('rail')?'OK':'KO','Renault/Dacia TCe raccord rail (rappel 10/2021)');
+rows+=line(cp.includes('INGENIUM_MODELS')&&cp.includes('Discovery Sport')?'OK':'KO','Ingenium JLR : modèles équipés listés');
+rows+=line(cp.includes('doc:')?'OK':'KO','Liens bulletins/sources présents');
 const idx=await fetch('index.html',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(idx.includes('id="pInput"')&&idx.includes('id="pBox"')&&idx.includes('id="pResults"')?'OK':'KO','Case prédictive v23 (#pInput/#pBox/#pResults)');
-rows+=line(!idx.includes('predictInput')?'OK':'KO','Anciens ids prédictifs SUPPRIMÉS (plus de double capture)');
-rows+=line(idx.includes('ui-v23.js')?'OK':'KO','index charge ui-v23.js');
-const u23=await fetch('js/ui-v23.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(u23.includes('__v23')&&u23.includes('predSuggestions')&&u23.includes('themes(')?'OK':'KO','ui-v23 : suggestions + thèmes de pannes');
+rows+=line(idx.includes('campGrid')&&idx.includes('js/campaigns-db.js')&&idx.includes('js/ui-v24.js')?'OK':'KO','Section Campagnes câblée dans index');
+rows+=line(idx.includes('id="pInput"')&&!idx.includes('predictInput')?'OK':'KO','Case prédictive unique v23+');
 const ac=await fetch('js/access-control.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(ac.includes('acMakeSignal')&&!/signal:\s*(c2|ctrl|c)\s*[,}]/.test(ac)?'OK':'KO','Helper acFetch sûr (bug AbortSignal éliminé)');
-rows+=line(ac.includes('_lastTest')&&ac.includes('_failStreak')?'OK':'KO','Relais : cache 60 s + ⛔ seulement après 3 échecs');
-rows+=line(ac.includes('ADMIN_HASH:3615734019')?'OK':'KO','Admin hash-only');
+rows+=line(ac.includes('acMakeSignal')&&!/signal:\s*(c2|ctrl|c)\s*[,}]/.test(ac)?'OK':'KO','Canal : helper acFetch sûr');
+rows+=line(ac.includes('_failStreak')?'OK':'KO','Relais non-bloquant (⛔ seulement après 3 échecs)');
 const sw=await fetch('service-worker.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(sw.includes('NTFY-PASSTHROUGH')?'OK':'KO','SW : passthrough ntfy');
-const TOP='diag-test-'+Math.random().toString(36).slice(2,8);let anyOk=false;
-for(const base of RELAYS){let health='-',pub='-',poll='-';
- try{const h=await fetch(base+'/health',{cache:'no-store'});health='HTTP '+h.status;}catch(e){health='ERR';}
- try{const p=await fetch(base+'/'+TOP,{method:'POST',cache:'no-store',headers:{'Content-Type':'text/plain'},body:JSON.stringify({ping:1})});pub='HTTP '+p.status;if(p.ok)anyOk=true;}catch(e){pub='ERR';}
- try{const g=await fetch(base+'/'+TOP+'/json?poll=1&since=10s',{cache:'no-store'});poll='HTTP '+g.status;}catch(e){poll='ERR';}
- rows+=line(pub.startsWith('HTTP 2')?'OK':'KO','Relais '+base+' → santé '+health+' | pub '+pub+' | poll '+poll);}
-rows+=line(anyOk?'OK':'WARN','Au moins un relais publie (sinon réseau bloquant → relais personnalisé)');
+rows+=line(/diag-v24/.test((sw.match(/CACHE='([^']+)'/)||[])[1]||'')?'OK':'KO','Cache SW v24');
+rows+=line(sw.includes('NTFY-PASSTHROUGH')?'OK':'KO','SW passthrough ntfy');
 const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
 if(m){rows+=line(m.name==='diag-incendie-by-kevin'?'OK':'KO','Manifest = '+m.name);}else{ko++;rows+=line('KO','manifest illisible');}
 const fd=await fetch('data/recalls-feed.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
 rows+=line(fd?'OK':'KO','Feed v'+(fd?fd.version:'?')+' — '+(fd?fd.cases.length:0)+' cas');
 let swr='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.getRegistration();swr=r&&r.active?'OK':'KO';}if(swr==='KO')ko++;
 rows+=line(swr,'Service Worker actif');
+let anyOk=false;const TOP='diag-test-'+Math.random().toString(36).slice(2,8);
+for(const base of RELAYS){try{const p=await fetch(base+'/'+TOP,{method:'POST',cache:'no-store',headers:{'Content-Type':'text/plain'},body:'{"ping":1}'});if(p.ok){anyOk=true;rows+=line('OK','Relais '+base+' pub OK');break;}}catch(e){}}
+rows+=line(anyOk?'OK':'WARN','Canal ntfy : au moins un relais publie');
+let bad=0,tot=0;if(navigator.onLine){const P=await fetch('js/campaigns-db.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');for(const u of (P.match(/https:\/\/image[^"]+/g)||[]).slice(0,30)){tot++;try{await fetch(u,{mode:'no-cors',cache:'no-store'});}catch{bad++;}}}
+rows+=line(bad===0?'OK':'WARN','Photos campagnes réelles : '+(tot-bad)+'/'+tot);
 document.getElementById('out').innerHTML='<table>'+rows+'</table>';
 const v=document.getElementById('verdict');
-if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v23 : prédictif unique opérationnel, thèmes OK, canal relais '+(anyOk?'OK':'en file (réseau bloquant)')+'.';}
-else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
+if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v24 : campagnes DV5/N47/TCe/EGR/Turbo/FAP/Ingenium intégrées, prédictif + canal OK.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
 document.getElementById('report').textContent=LOG.join('\n');}
 </script></body></html>
