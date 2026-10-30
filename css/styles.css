@@ -178,3 +178,6 @@ body.locked .app-header,body.locked section,body.locked nav,body.locked footer,b
 /* v21 - prédiction exhaustive */
 #predictInput{font-size:1.05rem;padding:.9rem 1rem}
 .ac-item small{margin-right:.4rem}
+/* v23 - thèmes de pannes */
+.theme-chip{font-size:.78rem;padding:.45rem .75rem;border-radius:16px}
+#pInput{font-size:1.05rem;padding:.9rem 1rem}
