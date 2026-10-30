@@ -181,3 +181,7 @@ body.locked .app-header,body.locked section,body.locked nav,body.locked footer,b
 /* v23 - thèmes de pannes */
 .theme-chip{font-size:.78rem;padding:.45rem .75rem;border-radius:16px}
 #pInput{font-size:1.05rem;padding:.9rem 1rem}
+/* v24 - campagnes */
+#campGrid .cause-card{border-left-color:#ff6f00}
+#campChips{flex-wrap:wrap;gap:.4rem}
+#campGrid a.btn-expand{margin-top:.6rem;border-color:#ff6f00;color:#ff6f00}
