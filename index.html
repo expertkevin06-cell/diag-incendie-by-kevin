@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v23 : case prédictive unique réparée + thèmes de pannes + relais non-bloquant">
+<meta name="description" content="diag-incendie-by-kevin v24 : campagnes techniques (chaîne DV5 7→8 mm bossage, N47/B47, rail TCe, EGR, turbo, FAP, Ingenium) + bulletins + photos">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -27,15 +27,15 @@
 <label>Demande d’accès (nom ou prénom) — notification admin uniquement</label>
 <input type="text" id="gateName" placeholder="Votre nom ou prénom">
 <button id="gateReqBtn" class="btn-secondary">📨 Demander l’accès</button>
-<p style="margin-top:.8rem;font-size:.8rem;opacity:.8">Notification directe sur l’APK admin (sans mail/SMS). File d’attente si relais momentané indisponible.</p>
+<p style="margin-top:.8rem;font-size:.8rem;opacity:.8">Notification directe sur l’APK admin (sans mail/SMS). File d’attente si relais momentanément indisponible.</p>
 </div>
 </div>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v23</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v24</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v23 • Case prédictive unique • Thèmes de pannes • Canal durci • MàJ 30 j</p></div>
+<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v24 • Campagnes DV5/N47/TCe/EGR/Turbo/FAP/Ingenium • Bulletins + photos</p></div>
 </div></header>
 
 <section id="adminPanel" class="search-section" style="display:none;border-top:4px solid #2e7d32">
@@ -48,11 +48,10 @@
 <h3>📡 Suivi des mises à jour (auto 30 j)</h3><div id="adminRelease" class="id-card"></div>
 </section>
 
-<!-- CASE PRÉDICTIVE UNIQUE (ids v23) -->
 <section class="search-section garage-box">
 <h2 style="margin-top:0">🔎 Case prédictive unique — marques, modèles, moteurs, puissances, pannes</h2>
 <div class="garage-form">
-<div class="ac-wrap" style="grid-column:1/-1"><input id="pInput" autocomplete="off" placeholder="Tapez : « ren… », « clio 5 courroie », « q4 obc », « 96 kw adblue », « id.7 12v »…"><div id="pBox" class="ac-box"></div></div>
+<div class="ac-wrap" style="grid-column:1/-1"><input id="pInput" autocomplete="off" placeholder="Tapez : « dv5 chaîne », « n47 », « sandero rail », « ingenium turbo », « clio 5 courroie »…"><div id="pBox" class="ac-box"></div></div>
 </div>
 <div id="pResults"></div>
 <div style="margin-top:.8rem;display:flex;gap:.5rem;flex-wrap:wrap">
@@ -72,6 +71,14 @@
 <button class="nav-btn" data-filter="equipment">🧪 Chimique / GPL</button>
 </nav>
 
+<!-- SECTION CAMPAGNES TECHNIQUES v24 -->
+<section class="search-section" style="border-top:4px solid #ff6f00">
+<h2 style="margin-top:0">📋 Campagnes techniques & bulletins (chaînes, carburant, EGR, turbo, FAP, Ingenium)</h2>
+<p id="campCount" class="ve-intro"></p>
+<div id="campChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
+<div class="causes-grid" id="campGrid"></div>
+</section>
+
 <section class="search-section" style="border-top:4px solid #4caf50">
 <h2 style="margin-top:0">🟢 Skoda Elroq — tous symptômes & pannes</h2>
 <div class="search-container" style="margin-bottom:.8rem"><input type="text" id="elqInput" placeholder="Symptôme : « charge lente », « 12v »..."></div>
@@ -83,16 +90,16 @@
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🌐 Recherche LIVE : NHTSA + Rappel Conso + Safety Gate + 24 sites</h2>
 <div class="search-container">
-<input type="text" id="liveInput" placeholder="ex : Clio 5 GPL, Q4 OBC...">
+<input type="text" id="liveInput" placeholder="ex : DV5 chain, N47, Sandero fuel rail...">
 <button id="liveBtn" class="btn-secondary">🌐 Recherche live multi-sources</button>
 </div><div id="liveResults"></div></section>
 
 <section class="search-section" style="border-top:1px solid var(--border)">
 <h2 style="margin-top:0">🧠 Recherche expert (synonymes + scoring + facettes)</h2>
 <div class="search-container">
-<input type="text" id="xpInput" placeholder="ex : AdBlue, GPF, ISG 48V...">
+<input type="text" id="xpInput" placeholder="ex : chaîne 8 mm, bossage, raccord rail, dilution huile...">
 <select id="xpEnergy" class="rs-btn" style="width:auto"><option value="">Toutes énergies</option><option value="thermal">Thermique</option><option value="ev">Électrique</option><option value="hybrid">Hybride</option><option value="lpg">GPL</option></select>
-<select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option><option value="belt">Courroie</option><option value="gearbox">Boîte</option><option value="turbo">Turbo</option><option value="egr">EGR</option><option value="dpf">DPF</option><option value="adblue">AdBlue</option><option value="adas">ADAS</option></select>
+<select id="xpSub" class="rs-btn" style="width:auto"><option value="">Tous sous-systèmes</option><option value="oil">Huile</option><option value="fuel">Carburant</option><option value="coolant">LDR</option><option value="12V">12V</option><option value="48V">48V</option><option value="HV">HT</option><option value="belt">Courroie/Chaîne</option><option value="gearbox">Boîte</option><option value="turbo">Turbo</option><option value="egr">EGR</option><option value="dpf">DPF</option><option value="adblue">AdBlue</option><option value="adas">ADAS</option></select>
 <button id="xpBtn" class="btn-primary">🧠 Analyser</button>
 </div><div id="xpResults"></div></section>
 
@@ -131,7 +138,7 @@
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale massive v23 + MàJ auto 30 j</h3>
+<h3>💾 Base locale massive v24 + MàJ auto 30 j</h3>
 <p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info">🔄 Chargement…</p>
 <button id="syncNowBtn" class="btn-offline">🔄 Forcer la MàJ</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
@@ -151,7 +158,7 @@
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v23 • Prédictif unique réparé • Thèmes pannes • Canal durci • MàJ 30 j</p></footer>
+<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v24 • Campagnes DV5 7→8 mm (bossage) • N47/B47 • Rail TCe • EGR/Turbo DV5 • FAP • Ingenium JLR</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
@@ -163,6 +170,7 @@
 <script src="js/vehicles-2025-db.js"></script>
 <script src="js/elroq-db.js"></script>
 <script src="js/models-mega-db.js"></script>
+<script src="js/campaigns-db.js"></script>
 <script src="js/predict-engine.js"></script>
 <script src="js/access-control.js"></script>
 <script src="js/search-engine.js"></script>
@@ -183,6 +191,7 @@
 <script src="js/ui-v21.js"></script>
 <script src="js/ui-v22.js"></script>
 <script src="js/ui-v23.js"></script>
+<script src="js/ui-v24.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
