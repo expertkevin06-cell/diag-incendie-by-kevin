@@ -1,7 +1,12 @@
-const CACHE='etude-v27',DYN='etude-dyn-v27';
+const CACHE='etude-v28',DYN='etude-dyn-v28';
 const CORE=['./','./index.html','./manifest.json','./css/styles.css','./js/data.js','./js/engine.js','./js/search-v25.js','./js/mega-pannes.js','./js/legal-auto.js','./js/app.js','./js/fiches-techniques.js','./images/icon.svg','./data/recalls-feed.json'];
 self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await Promise.allSettled(CORE.map(u=>c.add(u).catch(()=>null)));self.skipWaiting();})());});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&k!==DYN).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener('activate',e=>{e.waitUntil((async()=>{
+ await caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&k!==DYN).map(k=>caches.delete(k))));
+ await self.clients.claim();
+ const cls=await self.clients.matchAll({type:'window'});
+ cls.forEach(cl=>cl.postMessage({type:'sw-activated',version:CACHE}));})());});
+self.addEventListener('message',e=>{if(e.data==='SKIP_WAITING')self.skipWaiting();});
 self.addEventListener('periodicsync',e=>{if(e.tag==='monthly-recalls'){e.waitUntil((async()=>{try{
  const res=await fetch('data/recalls-feed.json?v='+Date.now(),{cache:'no-store'});if(!res.ok)return;
  const feed=await res.json();const c=await caches.open(DYN);c.put('data/recalls-feed.json',new Response(JSON.stringify(feed)));
