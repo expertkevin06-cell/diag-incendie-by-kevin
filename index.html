@@ -3,55 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="diag-incendie-by-kevin v21 : zone de départ/foyer, feu VE & propagation, élec VS méca VS fluide, FAP/catalyseur — photos réelles">
+<meta name="description" content="Etude incendie by Kevin v27 : analyse technique + juridique croisée, méga-base, IA locale, fond d'écran véhicule sportif">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="DiagIncendie">
+<meta name="apple-mobile-web-app-title" content="EtudeIncendie">
 <link rel="stylesheet" href="css/styles.css">
-<title>diag-incendie-by-kevin</title>
+<title>Etude incendie by Kevin</title>
 </head>
 <body>
 <div id="gateOverlay" class="gate" style="display:none">
 <div class="gate-card">
 <img src="images/icon.svg" class="logo" alt="">
-<h1>🔒 diag-incendie-by-kevin</h1>
+<h1>🔒 Etude incendie by Kevin</h1>
 <p id="gateStatus">Application protégée</p>
 <label>Mot de passe admin</label>
 <input type="password" id="gatePwd" placeholder="Mot de passe" autocomplete="new-password">
 <button id="gateAdminBtn" class="btn-primary">🔑 Entrer en admin</button>
 <hr style="margin:1rem 0;border:none;border-top:1px solid #555">
-<label>Demande d’accès (nom ou prénom)</label>
+<label>Demande d'accès (nom ou prénom)</label>
 <input type="text" id="gateName" placeholder="Votre nom ou prénom">
-<button id="gateReqBtn" class="btn-secondary">📨 Demander l’accès</button>
-<p style="margin-top:.8rem;font-size:.8rem;opacity:.8">Notification directe sur l’APK admin (sans mail ni SMS).</p>
+<button id="gateReqBtn" class="btn-secondary">📨 Demander l'accès</button>
+<p style="margin-top:.8rem;font-size:.8rem;opacity:.8">Notification directe sur l'APK admin.</p>
 </div>
 </div>
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>diag-incendie</h1><p>by Kevin — v21</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>Etude incendie</h1><p>by Kevin — v27 croisée</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 diag-incendie-by-kevin</h1><p class="subtitle">v21 • Foyer & origine • Feu VE • Élec VS méca • FAP/cata • Photos réelles</p></div>
+<div><h1>🔥 Etude incendie by Kevin</h1><p class="subtitle">v27 • Analyse tech+juridique croisée • Méga-base • IA locale • Photos réelles</p></div>
 </div></header>
 
 <section id="adminPanel" class="search-section" style="display:none;border-top:4px solid #2e7d32">
 <h2 style="margin-top:0">🛡️ ADMIN — Demandes / Appareils / Mises à jour</h2>
 <button class="btn-offline" data-act="refresh" style="color:#2e7d32">🔄 Rafraîchir</button>
-<button id="shareApkBtn" class="btn-offline" style="margin-left:.5rem">📧 Partager l’APK par mail</button>
-<h3>📬 Demandes d’accès</h3><div class="causes-grid" id="adminRequests"></div>
+<button id="shareApkBtn" class="btn-offline" style="margin-left:.5rem">📧 Partager l'APK par mail</button>
+<h3>📬 Demandes d'accès</h3><div class="causes-grid" id="adminRequests"></div>
 <h3>📱 Appareils gérés</h3><div class="causes-grid" id="adminGrants"></div>
 <h3>🔄 Publier une mise à jour</h3><div id="adminUpdate" class="garage-form"></div>
 </section>
 
 <section class="search-section garage-box">
-<h2 style="margin-top:0">🔎 Recherche unifiée — tapez librement</h2>
-<p style="opacity:.8;font-size:.85rem;margin-bottom:.6rem">« renault clio 5 courroie » • « audi q4 obc charge » • « foyer zone départ » • « fap herbe » • « id.7 12v incendie »</p>
+<h2 style="margin-top:0">🔎 Recherche unifiée prédictive</h2>
 <div class="ac-wrap" style="position:relative">
-<input id="unifiedInput" autocomplete="off" placeholder="Marque, modèle, panne, énergie… (prédictions automatiques)" style="font-size:1.1rem;padding:1rem">
+<input id="unifiedInput" autocomplete="off" placeholder="Marque, modèle, motorisation, panne…" style="font-size:1.1rem;padding:1rem">
 <div id="unifiedPredict" class="ac-box" style="display:none"></div>
 </div>
 <div id="unifiedResults" style="margin-top:1rem"></div>
@@ -67,31 +66,15 @@
 <button class="nav-btn" data-filter="vehicle-electric">🔋 VE / Hybride</button>
 <button class="nav-btn" data-filter="equipment">🧪 Chimique / GPL</button>
 </nav>
+<section id="navResults" style="display:none;scroll-margin-top:110px"></section>
 
-<!-- ===== v21 : MODULE ORIGINE & FOYER ===== -->
-<section id="section-fo-zone" style="border-top:4px solid #d32f2f">
-<h2>🎯 Déterminer la ZONE DE DÉPART (foyer) sur véhicule</h2>
-<div class="method-steps" id="fo-zone"></div>
-</section>
-<section id="section-fo-ev" style="border-top:4px solid #7c4dff">
-<h2>🔋 Feu VE : départ batterie & propagation à l’ensemble</h2>
-<div id="fo-ev" class="runaway-phases"></div>
-</section>
-<section id="section-fo-compare" style="border-top:4px solid #ff6f00">
-<h2>⚖️ Origine : ÉLECTRIQUE vs MÉCANIQUE vs FLUIDE</h2>
-<div id="fo-compare"></div>
-</section>
-<section id="section-fo-dpf" style="border-top:4px solid #455a64">
-<h2>🌫️ Départ de feu FAP / catalyseur</h2>
-<div id="fo-dpf" class="runaway-details"></div>
-</section>
-<!-- ===== fin module v21 ===== -->
-
+<!-- Les sections 🧰 PANNES, 🤖 IA et ⚖️ LEGAL-AUTO sont injectées dynamiquement par mega-pannes.js et legal-auto.js -->
 <section id="section-overheat"><h2>🌡️ Surchauffes thermique & VE</h2><div id="overheatChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="overheatGrid"></div></section>
 <section id="section-mech"><h2>⚙️ Mécanique</h2><div id="mechChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="mechGrid"></div></section>
 <section id="section-leaks"><h2>🛢️ Fuites</h2><div id="leaksChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="leaksGrid"></div></section>
 <section id="section-batt"><h2>🔋 Batteries 12V / 48V / HT</h2><div id="battChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="battGrid"></div></section>
 <section id="section-shorts"><h2>⚡ Courts-circuits</h2><div id="shortsChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="shortsGrid"></div></section>
+<section id="section-elroq" style="border-top:4px solid #4caf50"><h2>🟢 Skoda Elroq</h2><div class="search-container" style="margin-bottom:.8rem"><input type="text" id="elqInput" placeholder="Symptôme…"></div><p id="elqCount" class="ve-intro"></p><div id="elroqChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="elroqGrid"></div></section>
 <section id="section-recalls"><h2>🚨 Rappels & cas (MAJ mensuelle)</h2>
 <div class="recall-searches">
 <div class="rs-box"><label>🚗 Thermique</label><input id="q-thermal"><button class="rs-btn" data-energy="thermal">Chercher</button></div>
@@ -100,29 +83,34 @@
 <div class="rs-box"><label>⛽ GPL</label><input id="q-lpg"><button class="rs-btn" data-energy="lpg">Chercher</button></div>
 </div><p id="recallStats" class="ve-intro"></p><div class="causes-grid" id="recallGrid"></div></section>
 
+<section id="section-fo-zone" style="border-top:4px solid #d32f2f"><h2>🎯 Zone de départ (foyer)</h2><div class="method-steps" id="fo-zone"></div></section>
+<section id="section-fo-ev" style="border-top:4px solid #7c4dff"><h2>🔋 Feu VE</h2><div id="fo-ev" class="runaway-phases"></div></section>
+<section id="section-fo-compare" style="border-top:4px solid #ff6f00"><h2>⚖️ Élec vs Méca vs Fluide</h2><div id="fo-compare"></div></section>
+<section id="section-fo-dpf" style="border-top:4px solid #455a64"><h2>🌫️ Feu FAP/cata</h2><div id="fo-dpf" class="runaway-details"></div></section>
+
 <section><h2>🔬 Méthodologie NFPA 921</h2><div class="method-steps" id="methodSteps"></div><h3>📐 Patterns</h3><div class="patterns-grid" id="patternsGrid"></div></section>
 <section><h2>⚗️ Chimie du feu</h2><div class="tetrahedron" id="tetrahedron"></div><div class="phenomena-grid" id="phenomenaGrid"></div><div class="table-container"><table class="metal-table" id="gasTable"><thead><tr><th>Gaz</th><th>Source</th><th>Danger</th></tr></thead><tbody></tbody></table></div></section>
-<section><h2>📍 Zones du véhicule</h2><div class="ve-zones" id="vz-grid"></div></section>
+<section><h2>📍 Zones véhicule</h2><div class="ve-zones" id="vz-grid"></div></section>
 <section><h2>🎯 Origines</h2><div id="vo-grid"></div></section>
 <section><h2>🧱 Polymères</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Polymère</th><th>Usages</th><th>Feu</th><th>Rôle</th></tr></thead><tbody id="vp-table"></tbody></table></div><div class="id-card" id="vf-load"></div></section>
 <section><h2>📈 Développement du feu</h2><div id="vd-stages" class="runaway-phases"></div><h3>Aéraulique</h3><div class="id-card" id="vd-vent"></div><h3>Propagation</h3><div class="id-card" id="vd-spread"></div><h3>Direction</h3><div class="id-card" id="vd-dir"></div></section>
 <section><h2>🔋 Batterie HT</h2><div id="ev-seq" class="runaway-phases"></div><div id="ev-gas"></div><div class="id-card" id="ev-trig"></div><div class="id-card" id="ev-cc"></div><div class="id-card" id="ev-chg"></div><div id="ev-reig"></div><div class="id-card" id="ev-ext"></div></section>
 <section><h2>🚗 Spécifique thermique</h2><div id="th-expert" class="runaway-details"></div></section>
-<section><h2>🗺️ Cartographie de fusion</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Matériau</th><th>T°</th><th>Interprétation</th></tr></thead><tbody id="vm-table"></tbody></table></div></section>
+<section><h2>🗺️ Cartographie fusion</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Matériau</th><th>T°</th><th>Interprétation</th></tr></thead><tbody id="vm-table"></tbody></table></div></section>
 <section><h2>🧑 Protocole véhicule</h2><div class="method-steps" id="vproto"></div></section>
 <section><h2>🚗 Thermiques détaillés</h2><h3>Moteur</h3><div class="causes-grid" id="engineCauses"></div><h3>Habitacle</h3><div class="causes-grid" id="cabinCauses"></div></section>
 <section><h2>🔋 VE expert</h2><div class="chem-grid" id="chemGrid"></div><div class="runaway-phases" id="runawayPhases"></div><div class="runaway-details" id="runawayDetails"></div><div class="causes-grid" id="evCauses"></div></section>
 <section><h2>🔄 Hybrides</h2><div id="hybridInfo"></div></section>
-<section><h2>🏢 Bâtiments</h2><div class="causes-grid" id="buildingCauses"></div><div class="propagation-grid" id="propagationGrid"></div></section>
+<section><h2>🏢 Bâtiments</h2><div class="causes-grid" id="buildingCauses"></div><h3>Propagation</h3><div class="propagation-grid" id="propagationGrid"></div></section>
 <section><h2>🧪 Chimique</h2><div class="table-container"><table class="metal-table" id="selfIgnitionTable"><thead><tr><th>Matériau</th><th>T°</th><th>Mécanisme</th><th>Prévention</th></tr></thead><tbody></tbody></table></div><div id="incompatibilities"></div></section>
-<section><h2>🎯 Sources de départ</h2><div class="causes-grid" id="causesGrid"></div></section>
-<section><h2>🌡️ Points de fusion</h2><div class="table-container"><table id="metalTable" class="metal-table"><thead><tr><th>Métal</th><th>°C</th><th>°F</th><th>Aspect</th></tr></thead><tbody></tbody></table></div></section>
+<section><h2>🎯 Sources départ</h2><div class="causes-grid" id="causesGrid"></div></section>
+<section><h2>🌡️ Points fusion</h2><div class="table-container"><table id="metalTable" class="metal-table"><thead><tr><th>Métal</th><th>°C</th><th>°F</th><th>Aspect</th></tr></thead><tbody></tbody></table></div></section>
 <section><h2>🔌 Fils (ASTM E2929)</h2><div class="analysis-grid" id="wireAnalysisGrid"></div></section>
 <section><h2>🔩 Métal</h2><div class="identification-cards" id="metalIdGrid"></div></section>
-<section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
+<section><h2>📷 Galerie</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale massive v21 + MAJ mensuelle</h3>
+<h3>💾 Base locale massive v27 + MAJ mensuelle</h3>
 <p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info"></p>
 <button id="syncNowBtn" class="btn-offline">🔄 MAJ maintenant</button>
 <button id="offlinePhotosBtn" class="btn-offline">📥 Photos hors ligne</button>
@@ -130,44 +118,31 @@
 <p id="offlineProgress"></p>
 <div class="storage-stats">
 <div class="stat"><span class="stat-label">Cas</span><span class="stat-value" id="casesCount">0</span></div>
-<div class="stat"><span class="stat-label">Pannes totales</span><span class="stat-value" id="recallsCount">0</span></div>
+<div class="stat"><span class="stat-label">Pannes</span><span class="stat-value" id="recallsCount">0</span></div>
 <div class="stat"><span class="stat-label">Photos</span><span class="stat-value" id="photosCount">0</span></div>
 <div class="stat"><span class="stat-label">Métaux</span><span class="stat-value" id="metalsCount">0</span></div>
 </div></div>
 <div class="storage-card admin-card">
-<h3>🛠️ ADMIN — fond d'écran</h3>
+<h3>🛠️ ADMIN — fond d'écran PERMANENT + opacité</h3>
 <input type="file" id="adminBg" accept="image/*">
-<button id="adminBgApply" class="btn-offline">Appliquer</button>
+<label style="display:block;margin:.6rem 0 .2rem;font-size:.9rem">Opacité : <span id="bgOpVal">15</span> %</label>
+<input type="range" id="adminBgOpacity" min="0" max="60" value="15" style="width:100%">
+<button id="adminBgApply" class="btn-offline">💾 Enregistrer</button>
 <button id="adminBgReset" class="btn-offline">Réinitialiser</button>
 <p id="adminMsg"></p>
 </div></section>
 
-<footer class="app-footer"><p>© 2026 diag-incendie-by-kevin</p><p class="version">v21 • Foyer & origine • NFPA 921 • ASTM E2929 • MAJ mensuelle validée admin</p></footer>
+<footer class="app-footer"><p>© 2026 Etude incendie by Kevin</p><p class="version">v27 • Analyse tech+juridique croisée • NFPA 921 • ASTM E2929 • Code conso/civ</p></footer>
 
 <div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
-<script src="js/data-v9.js"></script>
-<script src="js/shorts-db.js"></script>
-<script src="js/leaks-batt-db.js"></script>
-<script src="js/overheat-mech-db.js"></script>
-<script src="js/eu-failures-db.js"></script>
-<script src="js/vehicles-2025-db.js"></script>
-<script src="js/elroq-db.js"></script>
-<script src="js/models-mega-db.js"></script>
-<script src="js/fire-origin-db.js"></script>
-<script src="js/unified-search.js"></script>
-<script src="js/apk-share.js"></script>
-<script src="js/access-control.js"></script>
-<script src="js/search-engine.js"></script>
-<script src="js/live-search.js"></script>
-<script src="js/multi-search.js"></script>
-<script src="js/auto-update.js"></script>
-<script src="js/gemini-search.js"></script>
-<script src="js/app-v9.js"></script>
-<script src="js/ui-v10.js"></script>
-<script src="js/ui-v11.js"></script>
-<script src="js/ui-v12.js"></script>
-<script src="js/ui-v20.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/search-v25.js"></script>
+<script src="js/mega-pannes.js"></script>
+<script src="js/legal-auto.js"></script>
+<script src="js/app.js"></script>
+<script src="js/fiches-techniques.js"></script>
 <script>
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js'));
 (function(){let d=false;function h(){if(d)return;d=true;const s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(()=>s.remove(),700);}}
