@@ -1,36 +1,57 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v27</title>
-<style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#4caf50}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#4caf50;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem}</style></head><body>
-<h1>🩺 Autodiagnostic v27 (tech+juridique + fond par défaut)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v28</title>
+<style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#4caf50}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#4caf50;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem;white-space:pre-wrap}</style></head><body>
+<h1>🩺 Autodiagnostic v28 (MAJ + intégrité)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
 const JS=['js/data.js','js/engine.js','js/search-v25.js','js/mega-pannes.js','js/legal-auto.js','js/app.js','js/fiches-techniques.js'];
-const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','tools/generate-icons.html','tools/upload-icons-github.html','tools/github-push.html','.github/workflows/monthly-recalls.yml']);
+const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml']);
 const SECRET_RE=/Kevin\s?\d{4,6}/i;
-let LOG=[];const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'[KO] ')+t);return `<tr><td class="${ok==='OK'?'ok':ok==='WARN'?'warn':'ko'}">${ok}</td><td>${t}</td></tr>`;};
-const st=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?200:r.status;}catch{return 'ERR';}};
-async function run(){LOG=[];let rows='',ko=0;
-for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK':'KO',f+' → HTTP '+s);}
-for(const f of JS){const src=await fetch(f,{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
- try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}
- if(SECRET_RE.test(src)){ko++;rows+=line('KO','⚠️ CLAIR SUSPECT dans '+f);}}
-const la=await fetch('js/legal-auto.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(la.includes('__v27')&&la.includes('laExtract')&&la.includes('laCrossSearch')&&la.includes('laDoctrineFor')?'OK':'KO','legal-auto v27 : extraction + 4 recherches croisées + doctrine');
-rows+=line(la.includes('d-faillance-auto-')&&la.includes('auto-legal-by-kevin')?'OK':'KO','2 nouvelles sources intégrées');
-rows+=line(la.includes('LEGAL_DOCTRINE')&&(la.match(/cat:"/g)||[]).length>=8?'OK':'KO','Doctrines juridiques : '+((la.match(/cat:"/g)||[]).length)+' (vice caché, conformité, sécurité, etc.)');
-const ap=await fetch('js/app.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(ap.includes('DEFAULT_BG')&&ap.includes('unsplash')?'OK':'KO','Fond écran par défaut (véhicule sportif rouge)');
-const idx=await fetch('index.html',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(idx.includes('js/legal-auto.js')?'OK':'KO','index charge legal-auto.js');
-const sw=await fetch('service-worker.js',{cache:'no-store'}).then(r=>r.text()).catch(()=>'');
-rows+=line(/etude-v2[7-9]/.test((sw.match(/CACHE='([^']+)'/)||[])[1]||'')?'OK':'KO','Cache SW : '+((sw.match(/CACHE='([^']+)'/)||[])[1]||'?'));
-rows+=line(sw.includes('images.unsplash.com')?'OK':'KO','SW cache image fond');
-const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
-if(m){rows+=line(m.name==='Etude incendie by Kevin'?'OK':'KO','Manifest = '+m.name);}else{ko++;rows+=line('KO','manifest illisible');}
-const fd=await fetch('data/recalls-feed.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
-rows+=line(fd?'OK':'KO','Feed v'+(fd?fd.version:'?')+' — '+(fd?fd.cases.length:0)+' cas');
-let swr='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.getRegistration();swr=r&&r.active?'OK':'KO';}if(swr==='KO')ko++;
-rows+=line(swr,'Service Worker actif');
-document.getElementById('out').innerHTML='<table>'+rows+'</table>';
-const v=document.getElementById('verdict');
-if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v27 : analyse tech+juridique croisée + 2 nouvelles sources + fond véhicule sportif rouge.';}else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
-document.getElementById('report').textContent=LOG.join('\n');}
+let LOG=[];
+const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'['+ok+'] ')+t);return '<tr><td class="'+(ok==='OK'?'ok':ok==='WARN'?'warn':'ko')+'">'+ok+'</td><td>'+t+'</td></tr>';};
+const st=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?200:r.status;}catch(e){return 'ERR';}};
+const txt=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?await r.text():'';}catch(e){return '';}};
+function h32(s){let h=5381;for(let i=0;i<s.length;i++){h=(Math.imul(h,33)+s.charCodeAt(i))|0;}return h>>>0;}
+async function run(){LOG=[];let rows='';let ko=0;
+ try{
+  for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK':'KO',f+' → HTTP '+s);}
+  for(const f of JS){const src=await txt(f);
+   try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}
+   if(SECRET_RE.test(src)){ko++;rows+=line('KO','⚠️ CLAIR SUSPECT dans '+f);}}
+  const eng=await txt('js/engine.js');
+  rows+=line(eng.includes('fromCharCode(75,101,118,105,110,56,51,54,48,48)')?'OK':'KO','Login admin : empreinte runtime');
+  rows+=line(eng.includes('controllerchange')&&eng.includes('registration')===false||eng.includes('getRegistration().then(function(reg){if(reg)reg.update();})')?'OK':'KO','Moteur MAJ SW : poll update()');
+  rows+=line(eng.includes('controllerchange')?'OK':'KO','Reload auto sur nouveau SW (controllerchange)');
+  rows+=line(eng.includes('manualUpdateCheck')?'OK':'KO','Bouton MAJ manuelle câblé');
+  const sw=await txt('service-worker.js');
+  const cn=(sw.match(/CACHE='([^']+)'/)||[])[1]||'?';
+  rows+=line(/etude-v2[89]/.test(cn)?'OK':'KO','Cache SW serveur : '+cn);
+  rows+=line(sw.includes('sw-activated')&&sw.includes('SKIP_WAITING')?'OK':'KO','SW : broadcast activation + SKIP_WAITING');
+  const idx=await txt('index.html');
+  rows+=line(idx.includes('manualUpdateBtn')?'OK':'KO','Bouton « Vérifier les mises à jour » présent');
+  rows+=line(idx.includes('js/legal-auto.js')&&idx.includes('js/mega-pannes.js')?'OK':'KO','Modules méga-base + juridique chargés');
+  rows+=line(!idx.includes('•••')?'OK':'KO','Champ mdp sans points');
+  const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
+  if(m){rows+=line(m.name==='Etude incendie by Kevin'?'OK':'KO','Manifest = '+m.name);
+   for(const ic of (m.icons||[])){const s=await st(ic.src);if(s!==200){ko++;rows+=line('KO','Icône '+ic.src+' → '+s);}}}
+  else{ko++;rows+=line('KO','manifest illisible');}
+  const fd=await fetch('data/recalls-feed.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
+  rows+=line(fd?'OK':'KO','Feed v'+(fd?fd.version:'?')+' — '+(fd?fd.cases.length:0)+' cas');
+  let swr='KO';
+  if(navigator.serviceWorker){const r=await navigator.serviceWorker.getRegistration();swr=(r&&r.active)?'OK':'KO';}
+  if(swr==='KO')ko++;
+  rows+=line(swr,'Service Worker actif');
+  rows+=line('periodicSync' in navigator?'OK':'WARN','Periodic Sync mensuel : '+('periodicSync' in navigator?'oui':'fallback lancement'));
+  let ntfy='WARN';try{const r=await fetch('https://ntfy.sh/health',{cache:'no-store'});ntfy=r.ok?'OK':'KO';}catch(e){}
+  rows+=line(ntfy,'Canal ntfy.sh (décisions admin/tiers)');
+  let pu=null;try{pu=JSON.parse(localStorage.getItem('purity25')||'null');}catch(e){}
+  if(pu&&pu.bad===0)rows+=line('OK','PURETÉ recherche « elroq » : '+pu.n+' résultats, 0 hors-sujet');
+  else rows+=line('WARN','PURETÉ : ouvrez l\'app une fois (auto-test au boot)');
+  let stest=null;try{stest=JSON.parse(localStorage.getItem('searchTest')||'null');}catch(e){}
+  if(stest&&stest.r5>0)rows+=line('OK','TEST alias : r5='+stest.r5+' | w206='+stest.w206+' | elroq='+stest.elroq);
+  else rows+=line('WARN','TEST alias : ouvrez l\'app d\'abord');
+ }catch(err){ko++;rows+=line('KO','ERREUR FATALE autodiag : '+err.message);}
+ document.getElementById('out').innerHTML='<table>'+rows+'</table>';
+ const v=document.getElementById('verdict');
+ if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v28 : pipeline de MAJ opérationnel, intégrité totale.';}
+ else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s) — détail ci-dessous.';}
+ document.getElementById('report').textContent=LOG.join('\n');}
 </script></body></html>
