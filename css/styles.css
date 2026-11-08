@@ -191,3 +191,8 @@ body.locked .app-header,body.locked section,body.locked nav,body.locked footer,b
 #fo-compare .metal-table th:nth-child(2){background:#7c4dff}
 #fo-compare .metal-table th:nth-child(3){background:#455a64}
 #fo-compare .metal-table th:nth-child(4){background:#ff6f00}
+/* v27 */
+#section-legal .cause-card{border-left-color:#1565c0}
+#section-legal textarea{font-family:'Segoe UI',sans-serif;line-height:1.6}
+#section-legal .id-card{border-left:3px solid #1565c0}
+#laOut h3{color:#1565c0;margin-bottom:.5rem;border-bottom:2px solid #1565c0;padding-bottom:.3rem}
