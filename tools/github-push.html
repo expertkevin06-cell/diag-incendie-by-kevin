@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Push fichiers GitHub - Tech incendie</title>
+<style>body{font-family:'Segoe UI',sans-serif;background:#f5f5f5;padding:1.5rem;max-width:760px;margin:auto}h1{color:#8f1d2c;font-size:1.3rem}input,select,textarea{width:100%;padding:.7rem;margin:.3rem 0;border:2px solid #ddd;border-radius:8px;font-size:.95rem;box-sizing:border-box}textarea{height:220px;font-family:monospace;font-size:.8rem}button{width:100%;padding:1rem;margin:.5rem 0;border:none;border-radius:8px;font-size:1.05rem;font-weight:700;color:#fff;background:#2e7d32;cursor:pointer}.step{background:#fff;border-left:5px solid #8f1d2c;padding:.8rem 1rem;margin:1rem 0;border-radius:8px;font-size:.9rem}#status{font-weight:700;color:#2e7d32;margin:.8rem 0}.ok{color:#2e7d32}.ko{color:#c62828}#log{font-size:.85rem}</style>
+</head>
+<body>
+<h1>📤 Push GitHub — crée ou REMPLACE sans erreur</h1>
+<div class="step"><strong>1.</strong> Token : Settings → Developer settings → Fine-grained tokens → dépôt <code>diag-incendie</code> → <strong>Contents : Read and write</strong>.</div>
+<div class="step"><strong>2.</strong> Collez le code du fichier dans la zone (ou choisissez un fichier local), indiquez le chemin exact (ex. <code>js/ui-v22.js</code>), envoyez. Le fichier existant est remplacé automatiquement.</div>
+<input id="user" value="expertkevin06-cell">
+<input id="repo" value="diag-incendie">
+<input id="token" type="password" placeholder="Token github_pat_...">
+<input id="path" placeholder="Chemin : js/ui-v22.js | index.html | service-worker.js | tools/autodiag.html | css/styles.css">
+<label style="display:block;background:#fff;border:2px dashed #8f1d2c;border-radius:8px;padding:.6rem;text-align:center;margin:.4rem 0;cursor:pointer">📁 Ou choisir un fichier local<input type="file" id="file" hidden></label>
+<textarea id="content" placeholder="Collez ici le contenu complet du fichier..."></textarea>
+<button id="send">📤 ENVOYER (crée ou remplace)</button>
+<div id="status"></div>
+<div id="log"></div>
+<script>
+document.getElementById('file').addEventListener('change', function(e){
+  var f=e.target.files[0]; if(!f) return;
+  document.getElementById('path').value=f.name;
+  var r=new FileReader(); r.onload=function(){document.getElementById('content').value=r.result;};
+  r.readAsText(f);
+});
+document.getElementById('send').addEventListener('click', async function(){
+  var user=document.getElementById('user').value.trim();
+  var repo=document.getElementById('repo').value.trim();
+  var token=document.getElementById('token').value.trim();
+  var path=document.getElementById('path').value.trim().replace(/^\/+/,'');
+  var content=document.getElementById('content').value;
+  var status=document.getElementById('status'), log=document.getElementById('log');
+  if(!token||!path||!content){alert('Token + chemin + contenu requis');return;}
+  status.textContent='⏳ Envoi de '+path+' ...';
+  var b64=btoa(unescape(encodeURIComponent(content)));
+  var sha;
+  try{
+    var g=await fetch('https://api.github.com/repos/'+user+'/'+repo+'/contents/'+path,{headers:{Authorization:'Bearer '+token}});
+    if(g.ok) sha=(await g.json()).sha;
+  }catch(e){}
+  var body={message:'MAJ '+path+' (v22)', content:b64};
+  if(sha) body.sha=sha;
+  var r=await fetch('https://api.github.com/repos/'+user+'/'+repo+'/contents/'+path,{
+    method:'PUT',
+    headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+    body:JSON.stringify(body)});
+  if(r.ok){
+    status.textContent='✅ '+path+' '+(sha?'REMPLACÉ':'CRÉÉ')+' avec succès';
+    log.innerHTML+='<div class="ok">✅ '+path+' → commit OK</div>';
+    document.getElementById('content').value='';
+  }else{
+    var e2=await r.json().catch(function(){return {};});
+    status.textContent='❌ Erreur '+r.status;
+    log.innerHTML+='<div class="ko">❌ '+path+' → '+r.status+' '+ (e2.message||'')+'</div>';
+  }
+});
+</script>
+</body>
+</html>
