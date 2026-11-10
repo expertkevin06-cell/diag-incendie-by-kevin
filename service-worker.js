@@ -1,19 +1,24 @@
-const CACHE_NAME = 'expert-auto-v6';
-const CORE = ['./','./index.html','./manifest.json','./style.css','./app.js','./data.js','./ai-providers.js','./firebase-config.js','./fond.jpg','./icon-192.png','./icon-512.png'];
-
-self.addEventListener('install', e => {
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE_NAME).then(c => Promise.allSettled(CORE.map(u => c.add(u).catch(() => {})))));
-});
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))).then(() => self.clients.claim()));
-});
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  const url = new URL(e.request.url);
-  if (/puter|pollinations|openrouter|huggingface|mistral|groq|together|siliconflow|cohere|moonshot|baichuan|zhipu|cdnjs|gstatic|firebase/.test(url.hostname)) {
-    e.respondWith(fetch(e.request).then(r => { const c = r.clone(); caches.open(CACHE_NAME).then(x => x.put(e.request, c)); return r; }).catch(() => caches.match(e.request)));
-    return;
-  }
-  e.respondWith(fetch(e.request).then(r => { const c = r.clone(); caches.open(CACHE_NAME).then(x => x.put(e.request, c)); return r; }).catch(() => caches.match(e.request).then(r => r || (e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error()))));
-});
+const CACHE='etude-v29',DYN='etude-dyn-v29';
+const CORE=['./','./index.html','./manifest.json','./css/styles.css','./js/data.js','./js/engine.js','./js/search-v25.js','./js/mega-pannes.js','./js/legal-auto.js','./js/app.js','./js/fiches-techniques.js','./images/icon.svg','./data/recalls-feed.json'];
+self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await Promise.allSettled(CORE.map(u=>c.add(u).catch(()=>null)));self.skipWaiting();})());});
+self.addEventListener('activate',e=>{e.waitUntil((async()=>{
+ await caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&k!==DYN).map(k=>caches.delete(k))));
+ await self.clients.claim();
+ const cls=await self.clients.matchAll({type:'window'});
+ cls.forEach(cl=>cl.postMessage({type:'sw-activated',version:CACHE}));})());});
+self.addEventListener('message',e=>{
+ if(e.data==='SKIP_WAITING')self.skipWaiting();
+ if(e.data&&e.data.type==='notify'){e.waitUntil(self.registration.showNotification(e.data.title,{body:e.data.body,icon:'images/icon-192x192.png',tag:e.data.tag||('ac-'+Date.now())}));}});
+self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{if(cs.length){cs[0].focus();}else{clients.openWindow('./');}}));});
+self.addEventListener('periodicsync',e=>{if(e.tag==='monthly-recalls'){e.waitUntil((async()=>{try{
+ const res=await fetch('data/recalls-feed.json?v='+Date.now(),{cache:'no-store'});if(!res.ok)return;
+ const feed=await res.json();const c=await caches.open(DYN);c.put('data/recalls-feed.json',new Response(JSON.stringify(feed)));
+ const cls=await self.clients.matchAll({type:'window'});cls.forEach(cl=>cl.postMessage({type:'feed-updated',version:feed.version}));
+ await self.registration.showNotification('Etude incendie by Kevin',{body:'🔄 MAJ mensuelle : feed v'+feed.version,icon:'images/icon-192x192.png'});}catch(err){console.warn(err);}})());}});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);
+if(u.hostname.includes('generativelanguage.googleapis.com')||u.hostname.includes('ntfy.sh')||u.hostname.includes('ntfy.zoey.dev')||u.hostname.includes('ntfy.tiepolog.ovh')||u.hostname.includes('api.nhtsa.gov')||u.hostname.includes('data.gouv.fr')||u.hostname.includes('expertkevin06-cell.github.io')||u.hostname.includes('auto-legal-by-kevin.lovable.app')||u.hostname.includes('images.unsplash.com')){e.respondWith(net(e.request));return;}
+if(e.request.destination==='image'){e.respondWith(img(e.request));return;}
+e.respondWith(nav(e.request));});
+async function img(r){const h=await caches.match(r);if(h)return h;try{const s=await fetch(r);if(s.ok||s.type==='opaque'){const c=await caches.open(DYN);c.put(r,s.clone());}return s;}catch{return new Response('',{status:503});}}
+async function net(r){try{const s=await fetch(r);if(s.ok){const c=await caches.open(DYN);c.put(r,s.clone());}return s;}catch{return(await caches.match(r))||new Response('{}',{status:503});}}
+async function nav(r){try{const s=await fetch(r);if(s.ok){const c=await caches.open(DYN);c.put(r,s.clone());}return s;}catch{const h=await caches.match(r);if(h)return h;if(r.mode==='navigate')return(await caches.match('./index.html'))||Response.error();return new Response('',{status:503});}}
