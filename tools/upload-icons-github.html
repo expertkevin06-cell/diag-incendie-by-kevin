@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Upload icônes GitHub v30</title>
+<style>body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;padding:1.5rem;max-width:720px;margin:auto}h1{color:#58a6ff}label{display:block;margin:.8rem 0 .3rem;color:#8b949e;font-size:.85rem}input{width:100%;padding:.7rem;border-radius:8px;border:1px solid #30363d;background:#161b22;color:#e6edf3;font-family:monospace}button{margin-top:1rem;padding:.8rem 1.4rem;background:#238636;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer}pre{background:#161b22;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem;white-space:pre-wrap}.ok{color:#3fb950}.ko{color:#f85149}</style></head><body>
+<h1>☁️ Upload icônes → GitHub (lit generate-icons)</h1>
+<p style="color:#8b949e">Exécutez d'abord <code>generate-icons.html</code>. Ce page lit <code>localStorage.generatedIcons</code> et pousse chaque PNG dans <code>images/</code> via l'API (token <code>repo</code>, non stocké).</p>
+<label>Token (ghp_...)</label><input type="password" id="tok">
+<label>Owner / Repo</label><input id="repo" value="expertkevin06-cell/etude-incendie-by-kevin">
+<label>Branche</label><input id="branch" value="main">
+<button onclick="up()">📤 Uploader les icônes</button>
+<pre id="log"></pre>
+<script>
+const L=document.getElementById('log');function log(m,c){L.innerHTML+='<span class="'+(c||'')+'">'+m+'</span>\n';L.scrollTop=L.scrollHeight;}
+function dataUrlToBase64(u){return u.split(',')[1]||'';}
+async function up(){const tok=document.getElementById('tok').value.trim();const repo=document.getElementById('repo').value.trim();const branch=document.getElementById('branch').value.trim()||'main';
+ let st;try{st=JSON.parse(localStorage.getItem('generatedIcons')||'null');}catch(e){st=null;}
+ if(!tok||!repo){log('❌ Token et repo requis.','ko');return;}
+ if(!st||!Object.keys(st).length){log('❌ Aucune icône générée. Ouvrez generate-icons.html d’abord.','ko');return;}
+ const keys=Object.keys(st);log('▶ '+keys.length+' icônes → '+repo+'/images @'+branch);
+ for(const name of keys){
+  try{
+   const path='images/'+name;const api='https://api.github.com/repos/'+repo+'/contents/'+path;
+   let sha=null;const get=await fetch(api,{headers:{Authorization:'token '+tok,Accept:'application/vnd.github+json'}});
+   if(get.ok){const j=await get.json();sha=j.sha;}
+   const content=dataUrlToBase64(st[name]);
+   const body={message:'v30 icons '+name,content:content,branch:branch};if(sha)body.sha=sha;
+   const put=await fetch(api,{method:'PUT',headers:{Authorization:'token '+tok,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+   if(put.ok||put.status===201)log('✅ '+name,'ok');else{const t=await put.text();log('❌ '+name+' → '+put.status+' '+t.slice(0,140),'ko');}
+  }catch(e){log('❌ '+name+' : '+e.message,'ko');}
+ }
+ log('✔ Terminé. Supprimez le token.');document.getElementById('tok').value='';}
+</script></body></html>
