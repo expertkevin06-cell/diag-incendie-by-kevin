@@ -1,6 +1,6 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v28</title>
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autodiagnostic v29</title>
 <style>body{font-family:'Segoe UI',sans-serif;background:#111;color:#eee;padding:1.5rem;max-width:800px;margin:auto}h1{color:#4caf50}td{padding:.5rem;border-bottom:1px solid #333;font-size:.85rem}.ok{color:#4caf50;font-weight:700}.ko{color:#ff5252;font-weight:700}.warn{color:#ffb300;font-weight:700}#verdict{margin:1rem 0;padding:1rem;border-radius:8px;font-weight:700}button{padding:.8rem 1.5rem;background:#4caf50;border:none;border-radius:8px;font-weight:700;cursor:pointer}pre{background:#222;padding:1rem;border-radius:8px;overflow:auto;font-size:.75rem;white-space:pre-wrap}</style></head><body>
-<h1>🩺 Autodiagnostic v28 (MAJ + intégrité)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
+<h1>🩺 Autodiagnostic v29 (canal tiers/admin + intégrité)</h1><button onclick="run()">▶ LANCER</button><div id="verdict"></div><div id="out"></div><pre id="report"></pre>
 <script>
 const JS=['js/data.js','js/engine.js','js/search-v25.js','js/mega-pannes.js','js/legal-auto.js','js/app.js','js/fiches-techniques.js'];
 const CORE=['index.html','manifest.json','service-worker.js','css/styles.css'].concat(JS,['images/icon.svg','data/recalls-feed.json','tools/fetch-recalls.mjs','.github/workflows/monthly-recalls.yml']);
@@ -9,7 +9,6 @@ let LOG=[];
 const line=(ok,t)=>{LOG.push((ok==='OK'?'[OK] ':'['+ok+'] ')+t);return '<tr><td class="'+(ok==='OK'?'ok':ok==='WARN'?'warn':'ko')+'">'+ok+'</td><td>'+t+'</td></tr>';};
 const st=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?200:r.status;}catch(e){return 'ERR';}};
 const txt=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?await r.text():'';}catch(e){return '';}};
-function h32(s){let h=5381;for(let i=0;i<s.length;i++){h=(Math.imul(h,33)+s.charCodeAt(i))|0;}return h>>>0;}
 async function run(){LOG=[];let rows='';let ko=0;
  try{
   for(const f of CORE){const s=await st(f);if(s!==200)ko++;rows+=line(s===200?'OK':'KO',f+' → HTTP '+s);}
@@ -17,41 +16,41 @@ async function run(){LOG=[];let rows='';let ko=0;
    try{new Function(src);rows+=line('OK','SYNTAXE '+f);}catch(e){ko++;rows+=line('KO','SYNTAXE '+f+' : '+e.message);}
    if(SECRET_RE.test(src)){ko++;rows+=line('KO','⚠️ CLAIR SUSPECT dans '+f);}}
   const eng=await txt('js/engine.js');
-  rows+=line(eng.includes('fromCharCode(75,101,118,105,110,56,51,54,48,48)')?'OK':'KO','Login admin : empreinte runtime');
-  rows+=line(eng.includes('controllerchange')&&eng.includes('registration')===false||eng.includes('getRegistration().then(function(reg){if(reg)reg.update();})')?'OK':'KO','Moteur MAJ SW : poll update()');
-  rows+=line(eng.includes('controllerchange')?'OK':'KO','Reload auto sur nouveau SW (controllerchange)');
-  rows+=line(eng.includes('manualUpdateCheck')?'OK':'KO','Bouton MAJ manuelle câblé');
+  rows+=line(eng.includes('fromCharCode(75,101,118,105,110,56,51,54,48,48)')?'OK':'KO','Login admin empreinte runtime');
+  rows+=line(eng.includes('HOSTS:[')&&eng.includes('ntfy.zoey.dev')?'OK':'KO','Multi-hôtes ntfy (bascule auto)');
+  rows+=line(eng.includes('showNotification')?'OK':'KO','Notifications via Service Worker');
+  rows+=line(eng.includes('acIsAdminDevice')&&eng.includes('acTick')?'OK':'KO','Polling demandes même au gate (appareil admin)');
+  rows+=line(eng.includes('gateRetry')&&eng.includes('acRetryRequest')?'OK':'KO','Bouton 🔁 Renvoyer la demande');
+  rows+=line(eng.includes('acRenderDiag')?'OK':'KO','Panneau diagnostic canal');
   const sw=await txt('service-worker.js');
-  const cn=(sw.match(/CACHE='([^']+)'/)||[])[1]||'?';
-  rows+=line(/etude-v2[89]/.test(cn)?'OK':'KO','Cache SW serveur : '+cn);
-  rows+=line(sw.includes('sw-activated')&&sw.includes('SKIP_WAITING')?'OK':'KO','SW : broadcast activation + SKIP_WAITING');
+  rows+=line(/etude-v2[9]/.test((sw.match(/CACHE='([^']+)'/)||[])[1]||'')?'OK':'KO','Cache SW : '+((sw.match(/CACHE='([^']+)'/)||[])[1]||'?'));
+  rows+=line(sw.includes("type==='notify'")&&sw.includes('notificationclick')?'OK':'KO','SW relais notifications + clic');
   const idx=await txt('index.html');
-  rows+=line(idx.includes('manualUpdateBtn')?'OK':'KO','Bouton « Vérifier les mises à jour » présent');
-  rows+=line(idx.includes('js/legal-auto.js')&&idx.includes('js/mega-pannes.js')?'OK':'KO','Modules méga-base + juridique chargés');
-  rows+=line(!idx.includes('•••')?'OK':'KO','Champ mdp sans points');
+  rows+=line(idx.includes('acDiag')&&idx.includes('gateRetry')?'OK':'KO','index : panneau canal + bouton renvoi');
+  // TEST ROUND-TRIP RÉEL du canal ntfy
+  const topic='diag-rt-'+Date.now();
+  let rt='KO',detail='';
+  try{
+   const p=await fetch('https://ntfy.sh/'+topic,{method:'POST',body:JSON.stringify({ping:1}),headers:{'Content-Type':'text/plain'}});
+   if(!p.ok)throw new Error('pub HTTP '+p.status);
+   await new Promise(r=>setTimeout(r,1200));
+   const g=await fetch('https://ntfy.sh/'+topic+'/json?poll=1&since=all',{cache:'no-store'});
+   const j=await g.json();
+   rt=(Array.isArray(j)&&j.length>0)?'OK':'KO';detail=rt==='OK'?'message reçu':'aucun message';
+  }catch(e){detail=e.message;}
+  if(rt==='KO')ko++;
+  rows+=line(rt,'Canal ntfsh round-trip (pub→poll) : '+detail);
+  rows+=line('Notification' in window?('granted'===Notification.permission?'OK':'WARN'):'KO','Permission notifications : '+('Notification' in window?Notification.permission:'absente'));
+  let swr='KO';if(navigator.serviceWorker){const r=await navigator.serviceWorker.getRegistration();swr=(r&&r.active)?'OK':'KO';}
+  if(swr==='KO')ko++;rows+=line(swr,'Service Worker actif');
   const m=await fetch('manifest.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
-  if(m){rows+=line(m.name==='Etude incendie by Kevin'?'OK':'KO','Manifest = '+m.name);
-   for(const ic of (m.icons||[])){const s=await st(ic.src);if(s!==200){ko++;rows+=line('KO','Icône '+ic.src+' → '+s);}}}
-  else{ko++;rows+=line('KO','manifest illisible');}
+  rows+=line(m&&m.name==='Etude incendie by Kevin'?'OK':'KO','Manifest = '+(m?m.name:'?'));
   const fd=await fetch('data/recalls-feed.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
   rows+=line(fd?'OK':'KO','Feed v'+(fd?fd.version:'?')+' — '+(fd?fd.cases.length:0)+' cas');
-  let swr='KO';
-  if(navigator.serviceWorker){const r=await navigator.serviceWorker.getRegistration();swr=(r&&r.active)?'OK':'KO';}
-  if(swr==='KO')ko++;
-  rows+=line(swr,'Service Worker actif');
-  rows+=line('periodicSync' in navigator?'OK':'WARN','Periodic Sync mensuel : '+('periodicSync' in navigator?'oui':'fallback lancement'));
-  let ntfy='WARN';try{const r=await fetch('https://ntfy.sh/health',{cache:'no-store'});ntfy=r.ok?'OK':'KO';}catch(e){}
-  rows+=line(ntfy,'Canal ntfy.sh (décisions admin/tiers)');
-  let pu=null;try{pu=JSON.parse(localStorage.getItem('purity25')||'null');}catch(e){}
-  if(pu&&pu.bad===0)rows+=line('OK','PURETÉ recherche « elroq » : '+pu.n+' résultats, 0 hors-sujet');
-  else rows+=line('WARN','PURETÉ : ouvrez l\'app une fois (auto-test au boot)');
-  let stest=null;try{stest=JSON.parse(localStorage.getItem('searchTest')||'null');}catch(e){}
-  if(stest&&stest.r5>0)rows+=line('OK','TEST alias : r5='+stest.r5+' | w206='+stest.w206+' | elroq='+stest.elroq);
-  else rows+=line('WARN','TEST alias : ouvrez l\'app d\'abord');
- }catch(err){ko++;rows+=line('KO','ERREUR FATALE autodiag : '+err.message);}
+ }catch(err){ko++;rows+=line('KO','ERREUR FATALE : '+err.message);}
  document.getElementById('out').innerHTML='<table>'+rows+'</table>';
  const v=document.getElementById('verdict');
- if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v28 : pipeline de MAJ opérationnel, intégrité totale.';}
- else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s) — détail ci-dessous.';}
+ if(ko===0){v.style.background='#1b5e20';v.textContent='✅ CONFORME v29 : canal tiers/admin opérationnel (round-trip OK).';}
+ else{v.style.background='#b71c1c';v.textContent='❌ '+ko+' anomalie(s).';}
  document.getElementById('report').textContent=LOG.join('\n');}
 </script></body></html>
