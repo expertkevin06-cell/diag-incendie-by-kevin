@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="Etude incendie by Kevin v29 : canal tiers/admin fiabilisé, analyse tech+juridique, méga-base pannes connues, IA locale, MAJ mensuelle">
+<meta name="description" content="Etude incendie by Kevin v30 : fond véhicule en feu réglable, photos par marque, accès tiers opérationnel, méga-base, IA locale, juriste">
 <meta name="theme-color" content="#8f1d2c">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="images/icon.svg">
@@ -18,7 +18,7 @@
 </head>
 <body>
 
-<!-- ================= GATE D'ACCÈS ================= -->
+<!-- GATE D'ACCÈS (admin obligatoire / tiers contrôlé) -->
 <div id="gateOverlay" class="gate" style="display:none">
 <div class="gate-card">
 <img src="images/icon.svg" class="logo" alt="">
@@ -32,39 +32,33 @@
 <input type="text" id="gateName" placeholder="Votre nom ou prénom">
 <button id="gateReqBtn" class="btn-secondary">📨 Demander l'accès</button>
 <button id="gateRetry" class="btn-offline" style="display:none;margin-top:.5rem">🔁 Renvoyer la demande</button>
-<p style="margin-top:.8rem;font-size:.8rem;opacity:.8">Notification directe sur l'APK admin (sans mail ni SMS). Révocation possible à tout moment.</p>
+<p style="margin-top:.8rem;font-size:.8rem;opacity:.8">Notification directe sur l'APK admin (sans mail ni SMS). Accord / refus / révocation à tout moment.</p>
 </div>
 </div>
 
-<!-- ================= SPLASH ================= -->
-<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>Etude incendie</h1><p>by Kevin — v29</p></div>
+<div id="splash"><img src="images/icon.svg" class="logo" alt=""><h1>Etude incendie</h1><p>by Kevin — v30</p></div>
 <div id="updateBanner" class="update-banner"></div>
 
-<!-- ================= HEADER ================= -->
 <header class="app-header" id="appHeader"><div class="header-content">
 <img src="images/icon.svg" alt="" class="header-logo" onerror="this.style.display='none'">
-<div><h1>🔥 Etude incendie by Kevin</h1><p class="subtitle">v29 • Canal tiers/admin fiabilisé • Analyse tech+juridique • Méga-base • IA locale • MAJ mensuelle</p></div>
+<div><h1>🔥 Etude incendie by Kevin</h1><p class="subtitle">v30 • Fond véhicule en feu réglable • Photos par marque • Accès tiers opérationnel • Méga-base • IA locale • Juriste</p></div>
 </div></header>
 
-<!-- ================= PANNEAU ADMIN ================= -->
+<!-- PANNEAU ADMIN -->
 <section id="adminPanel" class="search-section" style="display:none;border-top:4px solid #2e7d32">
-<h2 style="margin-top:0">🛡️ ADMIN — Demandes / Appareils / Mises à jour / Canal</h2>
+<h2 style="margin-top:0">🛡️ ADMIN — Demandes / Appareils / MAJ / Canal</h2>
 <button class="btn-offline" data-act="refresh" style="color:#2e7d32">🔄 Rafraîchir les demandes</button>
 <button id="shareApkBtn" class="btn-offline" style="margin-left:.5rem">📧 Partager l'APK par mail</button>
-<h3>📬 Demandes d'accès reçues</h3>
-<div class="causes-grid" id="adminRequests"></div>
-<h3>📱 Appareils gérés (accès / révocation)</h3>
-<div class="causes-grid" id="adminGrants"></div>
-<h3>🔄 Publier une mise à jour (case = applicable aux tiers)</h3>
-<div id="adminUpdate" class="garage-form"></div>
-<h3>📡 Canal notifications (ntfy)</h3>
-<div id="acDiag" class="identification"></div>
+<h3>📬 Demandes d'accès reçues</h3><div class="causes-grid" id="adminRequests"></div>
+<h3>📱 Appareils gérés (accord / révocation)</h3><div class="causes-grid" id="adminGrants"></div>
+<h3>🔄 Publier une mise à jour (case = applicable aux tiers)</h3><div id="adminUpdate" class="garage-form"></div>
+<h3>📡 Canal notifications (ntfy)</h3><div id="acDiag" class="identification"></div>
 </section>
 
-<!-- ================= RECHERCHE UNIFIÉE ================= -->
+<!-- RECHERCHE UNIFIÉE -->
 <section class="search-section garage-box">
-<h2 style="margin-top:0">🔎 Recherche unifiée prédictive — marque, modèle, motorisation, panne</h2>
-<p style="opacity:.8;font-size:.85rem;margin-bottom:.6rem">Tapez le début : « ren » → Renault • « clio 5 » → modèle • « 1.5 » → motorisation • « courroie / fap / charge » → panne • « elroq » → tous les problèmes Elroq</p>
+<h2 style="margin-top:0">🔎 Recherche unifiée prédictive</h2>
+<p style="opacity:.8;font-size:.85rem;margin-bottom:.6rem">« renault clio 5 courroie » • « audi q4 obc charge » • « foyer zone départ » • « fap herbe » • « elroq 12v »</p>
 <div class="ac-wrap" style="position:relative">
 <input id="unifiedInput" autocomplete="off" placeholder="Marque, modèle, motorisation, panne… (prédictions cliquables)" style="font-size:1.1rem;padding:1rem">
 <div id="unifiedPredict" class="ac-box" style="display:none"></div>
@@ -72,10 +66,8 @@
 <div id="unifiedResults" style="margin-top:1rem"></div>
 </section>
 
-<!-- ================= STATUT CONNEXION ================= -->
 <div id="connectionStatus" class="connection-status online"><span class="status-text">En ligne</span></div>
 
-<!-- ================= FILTRES CATÉGORIE ================= -->
 <nav class="main-nav">
 <button class="nav-btn active" data-filter="all">Tous</button>
 <button class="nav-btn" data-filter="building">🏢 Bâtiment</button>
@@ -86,9 +78,9 @@
 </nav>
 <section id="navResults" style="display:none;scroll-margin-top:110px"></section>
 
-<!-- ================= GARAGE : CASCADES PRÉDICTIVES ================= -->
+<!-- GARAGE CASCADES -->
 <section class="search-section garage-box">
-<h2 style="margin-top:0">🚘 Mon véhicule — suggestions automatiques + attribution vérifiée</h2>
+<h2 style="margin-top:0">🚘 Mon véhicule — suggestions + attribution vérifiée</h2>
 <div class="garage-form">
 <div class="ac-wrap"><input id="gBrand2" autocomplete="off" placeholder="Marque : « ren », « audi »..."><div class="ac-box"></div></div>
 <div class="ac-wrap"><input id="gModel2" autocomplete="off" placeholder="Modèle : « clio 5 », « elroq »..."><div class="ac-box"></div></div>
@@ -100,68 +92,60 @@
 <div id="garageReport2"></div>
 </section>
 
-<!-- ===== Sections injectées automatiquement AVANT #section-overheat =====
-     📋 fiches-techniques.js • 🧰 mega-pannes.js (PANNES CONNUES) • 🤖 (IA locale) • ⚖️ legal-auto.js ===== -->
+<!-- Sections injectées automatiquement avant #section-overheat :
+     📋 fiches-techniques.js • 🧰 mega-pannes.js • 🤖 IA locale • ⚖️ legal-auto.js -->
 
 <section id="section-overheat"><h2>🌡️ Surchauffes thermique & VE</h2><div id="overheatChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="overheatGrid"></div></section>
-<section id="section-mech"><h2>⚙️ Mécanique : courroies, boîtes, turbo, EGR, refroidisseur EGR</h2><div id="mechChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="mechGrid"></div></section>
+<section id="section-mech"><h2>⚙️ Mécanique : courroies, boîtes, turbo, EGR</h2><div id="mechChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="mechGrid"></div></section>
 <section id="section-leaks"><h2>🛢️ Fuites : huile, carburant, fluides</h2><div id="leaksChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="leaksGrid"></div></section>
 <section id="section-batt"><h2>🔋 Batteries 12V / 48V / HT</h2><div id="battChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="battGrid"></div></section>
 <section id="section-shorts"><h2>⚡ Courts-circuits & pannes électriques</h2><div id="shortsChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="shortsGrid"></div></section>
-
-<section id="section-elroq" style="border-top:4px solid #4caf50">
-<h2>🟢 Skoda Elroq — tous symptômes & pannes</h2>
-<div class="search-container" style="margin-bottom:.8rem"><input type="text" id="elqInput" placeholder="Symptôme : « charge lente », « 12v », « sifflement »..."></div>
-<p id="elqCount" class="ve-intro"></p>
-<div id="elroqChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
-<div class="causes-grid" id="elroqGrid"></div>
-</section>
-
-<section id="section-recalls">
-<h2>🚨 Rappels & cas par énergie (MAJ mensuelle)</h2>
+<section id="section-elroq" style="border-top:4px solid #4caf50"><h2>🟢 Skoda Elroq — symptômes & pannes</h2><div class="search-container" style="margin-bottom:.8rem"><input type="text" id="elqInput" placeholder="Symptôme : « charge lente », « 12v »..."></div><p id="elqCount" class="ve-intro"></p><div id="elroqChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div><div class="causes-grid" id="elroqGrid"></div></section>
+<section id="section-recalls"><h2>🚨 Rappels & cas par énergie (MAJ mensuelle)</h2>
 <div class="recall-searches">
-<div class="rs-box"><label>🚗 Thermique</label><input id="q-thermal" placeholder="marque, modèle..."><button class="rs-btn" data-energy="thermal">Chercher</button></div>
-<div class="rs-box"><label>🔋 Électrique</label><input id="q-ev" placeholder="marque, batterie..."><button class="rs-btn" data-energy="ev">Chercher</button></div>
-<div class="rs-box"><label>🔄 Hybride</label><input id="q-hybrid" placeholder="marque, PHEV..."><button class="rs-btn" data-energy="hybrid">Chercher</button></div>
-<div class="rs-box"><label>⛽ GPL</label><input id="q-lpg" placeholder="marque, réservoir..."><button class="rs-btn" data-energy="lpg">Chercher</button></div>
-</div>
-<p id="recallStats" class="ve-intro"></p>
-<div class="causes-grid" id="recallGrid"></div>
-</section>
+<div class="rs-box"><label>🚗 Thermique</label><input id="q-thermal"><button class="rs-btn" data-energy="thermal">Chercher</button></div>
+<div class="rs-box"><label>🔋 Électrique</label><input id="q-ev"><button class="rs-btn" data-energy="ev">Chercher</button></div>
+<div class="rs-box"><label>🔄 Hybride</label><input id="q-hybrid"><button class="rs-btn" data-energy="hybrid">Chercher</button></div>
+<div class="rs-box"><label>⛽ GPL</label><input id="q-lpg"><button class="rs-btn" data-energy="lpg">Chercher</button></div>
+</div><p id="recallStats" class="ve-intro"></p><div class="causes-grid" id="recallGrid"></div></section>
 
-<!-- ================= MODULE FOYER / ORIGINE ================= -->
-<section id="section-fo-zone" style="border-top:4px solid #d32f2f"><h2>🎯 Déterminer la ZONE DE DÉPART (foyer) sur véhicule</h2><div class="method-steps" id="fo-zone"></div></section>
-<section id="section-fo-ev" style="border-top:4px solid #7c4dff"><h2>🔋 Feu VE : départ batterie & propagation à l'ensemble</h2><div id="fo-ev" class="runaway-phases"></div></section>
-<section id="section-fo-compare" style="border-top:4px solid #ff6f00"><h2>⚖️ Origine : ÉLECTRIQUE vs MÉCANIQUE vs FLUIDE</h2><div id="fo-compare"></div></section>
-<section id="section-fo-dpf" style="border-top:4px solid #455a64"><h2>🌫️ Départ de feu FAP / catalyseur</h2><div id="fo-dpf" class="runaway-details"></div></section>
+<section id="section-fo-zone" style="border-top:4px solid #d32f2f"><h2>🎯 Zone de départ (foyer) sur véhicule</h2><div class="method-steps" id="fo-zone"></div></section>
+<section id="section-fo-ev" style="border-top:4px solid #7c4dff"><h2>🔋 Feu VE : départ & propagation</h2><div id="fo-ev" class="runaway-phases"></div></section>
+<section id="section-fo-compare" style="border-top:4px solid #ff6f00"><h2>⚖️ ÉLECTRIQUE vs MÉCANIQUE vs FLUIDE</h2><div id="fo-compare"></div></section>
+<section id="section-fo-dpf" style="border-top:4px solid #455a64"><h2>🌫️ Feu FAP / catalyseur</h2><div id="fo-dpf" class="runaway-details"></div></section>
 
-<!-- ================= BASES TECHNIQUES ================= -->
-<section><h2>🔬 Méthodologie NFPA 921</h2><div class="method-steps" id="methodSteps"></div><h3>📐 Patterns de feu</h3><div class="patterns-grid" id="patternsGrid"></div></section>
-<section><h2>⚗️ Chimie du feu & phénomènes</h2><div class="tetrahedron" id="tetrahedron"></div><div class="phenomena-grid" id="phenomenaGrid"></div><div class="table-container"><table class="metal-table" id="gasTable"><thead><tr><th>Gaz</th><th>Source</th><th>Danger</th></tr></thead><tbody></tbody></table></div></section>
-<section><h2>📍 Zones du véhicule & risques</h2><div class="ve-zones" id="vz-grid"></div></section>
-<section><h2>🎯 Origines (analyse ingénieur)</h2><p class="ve-intro">Touchez chaque bloc : mécanismes, preuves, données chiffrées, photos réelles.</p><div id="vo-grid"></div></section>
-<section><h2>🧱 Polymères & charge calorifique</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Polymère</th><th>Usages</th><th>Feu</th><th>Rôle</th></tr></thead><tbody id="vp-table"></tbody></table></div><div class="id-card" id="vf-load"></div></section>
-<section><h2>📈 Développement du feu</h2><div id="vd-stages" class="runaway-phases"></div><h3>Aéraulique & comburant</h3><div class="id-card" id="vd-vent"></div><h3>Chemins de propagation</h3><div class="id-card" id="vd-spread"></div><h3>Lecture de direction</h3><div class="id-card" id="vd-dir"></div></section>
-<section><h2>🔋 Batterie HT : séquence & preuves</h2><div id="ev-seq" class="runaway-phases"></div><div id="ev-gas"></div><h3>Déclencheurs</h3><div class="id-card" id="ev-trig"></div><h3>Cause interne VS conséquence</h3><div class="id-card" id="ev-cc"></div><h3>Défauts de charge</h3><div class="id-card" id="ev-chg"></div><h3>Ré-ignition</h3><div id="ev-reig"></div><h3>Extinction</h3><div class="id-card" id="ev-ext"></div></section>
+<section><h2>🔬 Méthodologie NFPA 921</h2><div class="method-steps" id="methodSteps"></div><h3>📐 Patterns</h3><div class="patterns-grid" id="patternsGrid"></div></section>
+<section><h2>⚗️ Chimie du feu</h2><div class="tetrahedron" id="tetrahedron"></div><div class="phenomena-grid" id="phenomenaGrid"></div><div class="table-container"><table class="metal-table" id="gasTable"><thead><tr><th>Gaz</th><th>Source</th><th>Danger</th></tr></thead><tbody></tbody></table></div></section>
+<section><h2>📍 Zones du véhicule</h2><div class="ve-zones" id="vz-grid"></div></section>
+<section><h2>🎯 Origines (analyse ingénieur)</h2><div id="vo-grid"></div></section>
+<section><h2>🧱 Polymères</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Polymère</th><th>Usages</th><th>Feu</th><th>Rôle</th></tr></thead><tbody id="vp-table"></tbody></table></div><div class="id-card" id="vf-load"></div></section>
+<section><h2>📈 Développement du feu</h2><div id="vd-stages" class="runaway-phases"></div><h3>Aéraulique</h3><div class="id-card" id="vd-vent"></div><h3>Propagation</h3><div class="id-card" id="vd-spread"></div><h3>Direction</h3><div class="id-card" id="vd-dir"></div></section>
+<section><h2>🔋 Batterie HT</h2><div id="ev-seq" class="runaway-phases"></div><div id="ev-gas"></div><div class="id-card" id="ev-trig"></div><div class="id-card" id="ev-cc"></div><div class="id-card" id="ev-chg"></div><div id="ev-reig"></div><div class="id-card" id="ev-ext"></div></section>
 <section><h2>🚗 Spécifique thermique</h2><div id="th-expert" class="runaway-details"></div></section>
-<section><h2>🗺️ Cartographie de fusion (bornes de T°)</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Matériau</th><th>T°</th><th>Interprétation</th></tr></thead><tbody id="vm-table"></tbody></table></div></section>
-<section><h2>🧑 Protocole d'investigation véhicule</h2><div class="method-steps" id="vproto"></div></section>
-<section><h2>🚗 Thermiques détaillés</h2><h3>Compartiment moteur</h3><div class="causes-grid" id="engineCauses"></div><h3>Habitacle</h3><div class="causes-grid" id="cabinCauses"></div></section>
+<section><h2>🗺️ Cartographie de fusion</h2><div class="table-container"><table class="metal-table"><thead><tr><th>Matériau</th><th>T°</th><th>Interprétation</th></tr></thead><tbody id="vm-table"></tbody></table></div></section>
+<section><h2>🧑 Protocole véhicule</h2><div class="method-steps" id="vproto"></div></section>
+<section><h2>🚗 Thermiques détaillés</h2><h3>Moteur</h3><div class="causes-grid" id="engineCauses"></div><h3>Habitacle</h3><div class="causes-grid" id="cabinCauses"></div></section>
 <section><h2>🔋 VE expert</h2><div class="chem-grid" id="chemGrid"></div><div class="runaway-phases" id="runawayPhases"></div><div class="runaway-details" id="runawayDetails"></div><div class="causes-grid" id="evCauses"></div></section>
 <section><h2>🔄 Hybrides</h2><div id="hybridInfo"></div></section>
 <section><h2>🏢 Bâtiments</h2><div class="causes-grid" id="buildingCauses"></div><h3>Propagation</h3><div class="propagation-grid" id="propagationGrid"></div></section>
-<section><h2>🧪 Chimique & auto-inflammation</h2><div class="table-container"><table class="metal-table" id="selfIgnitionTable"><thead><tr><th>Matériau</th><th>T°</th><th>Mécanisme</th><th>Prévention</th></tr></thead><tbody></tbody></table></div><div id="incompatibilities"></div></section>
-<section><h2>🎯 Sources de départ incendie</h2><div class="causes-grid" id="causesGrid"></div></section>
-<section><h2>🌡️ Points de fusion des métaux</h2><div class="table-container"><table id="metalTable" class="metal-table"><thead><tr><th>Métal</th><th>°C</th><th>°F</th><th>Aspect après feu</th></tr></thead><tbody></tbody></table></div></section>
-<section><h2>🔌 Analyse des fils (ASTM E2929)</h2><div class="analysis-grid" id="wireAnalysisGrid"></div></section>
-<section><h2>🔩 Identification sur métal</h2><div class="identification-cards" id="metalIdGrid"></div></section>
+<section><h2>🧪 Chimique</h2><div class="table-container"><table class="metal-table" id="selfIgnitionTable"><thead><tr><th>Matériau</th><th>T°</th><th>Mécanisme</th><th>Prévention</th></tr></thead><tbody></tbody></table></div><div id="incompatibilities"></div></section>
+<section><h2>🎯 Sources de départ</h2><div class="causes-grid" id="causesGrid"></div></section>
+<section><h2>🌡️ Points de fusion</h2><div class="table-container"><table id="metalTable" class="metal-table"><thead><tr><th>Métal</th><th>°C</th><th>°F</th><th>Aspect</th></tr></thead><tbody></tbody></table></div></section>
+<section><h2>🔌 Fils (ASTM E2929)</h2><div class="analysis-grid" id="wireAnalysisGrid"></div></section>
+<section><h2>🔩 Métal</h2><div class="identification-cards" id="metalIdGrid"></div></section>
+
+<!-- NOUVEAU v30 : PHOTOS RÉELLES PAR MARQUE -->
+<section id="section-brandphotos" style="border-top:4px solid #d32f2f">
+<h2>📸 Photos réelles par marque & sujet</h2>
+<div id="bpChips" class="main-nav" style="box-shadow:none;padding:.5rem 0"></div>
+<div class="gallery-grid" id="bpGrid"></div>
+</section>
+
 <section><h2>📷 Galerie photos réelles</h2><div class="gallery-grid" id="photoGallery"></div></section>
 
-<!-- ================= STOCKAGE + ADMIN FOND ================= -->
 <section class="storage-info"><div class="storage-card">
-<h3>💾 Base locale massive v29 + MAJ mensuelle</h3>
-<p id="storageStatus">Init...</p>
-<p id="feedInfo" class="feed-info"></p>
+<h3>💾 Base locale massive v30 + MAJ mensuelle</h3>
+<p id="storageStatus">Init...</p><p id="feedInfo" class="feed-info"></p>
 <button id="manualUpdateBtn" class="btn-offline">🔄 Vérifier les mises à jour</button>
 <button id="syncNowBtn" class="btn-offline">📥 MAJ feed maintenant</button>
 <button id="offlinePhotosBtn" class="btn-offline">📷 Photos hors ligne</button>
@@ -174,30 +158,21 @@
 <div class="stat"><span class="stat-label">Métaux</span><span class="stat-value" id="metalsCount">0</span></div>
 </div></div>
 <div class="storage-card admin-card">
-<h3>🛠️ ADMIN — fond d'écran PERMANENT + opacité</h3>
+<h3>🛠️ ADMIN — fond d'écran (véhicule en feu par défaut) + opacité</h3>
+<p style="font-size:.85rem;opacity:.9">Fond par défaut : véhicule en feu réaliste, visible en permanence. Réglez l'opacité ou chargez votre propre fond (fichier ou URL).</p>
 <input type="file" id="adminBg" accept="image/*">
-<label style="display:block;margin:.6rem 0 .2rem;font-size:.9rem">Opacité : <span id="bgOpVal">15</span> % (photo visible en permanence)</label>
-<input type="range" id="adminBgOpacity" min="0" max="60" value="15" style="width:100%">
+<input type="text" id="adminBgUrl" placeholder="ou collez une URL d'image (https://…)" style="margin-top:.5rem">
+<label style="display:block;margin:.6rem 0 .2rem;font-size:.9rem">Opacité : <span id="bgOpVal">22</span> %</label>
+<input type="range" id="adminBgOpacity" min="0" max="60" value="22" style="width:100%">
 <button id="adminBgApply" class="btn-offline">💾 Enregistrer & appliquer</button>
-<button id="adminBgReset" class="btn-offline">Réinitialiser</button>
+<button id="adminBgReset" class="btn-offline">Réinitialiser (fond véhicule en feu)</button>
 <p id="adminMsg"></p>
 </div></section>
 
-<!-- ================= FOOTER ================= -->
-<footer class="app-footer">
-<p>© 2026 Etude incendie by Kevin</p>
-<p class="version">v29 • Canal ntfy fiabilisé • Admin obligatoire • Tiers contrôlé • NFPA 921 • ASTM E2929 • Code conso/civ</p>
-</footer>
+<footer class="app-footer"><p>© 2026 Etude incendie by Kevin</p><p class="version">v30 • NFPA 921 • ASTM E2929 • NHTSA • Rappel Conso • Safety Gate • KBA • Code conso/civ</p></footer>
 
-<!-- ================= LIGHTBOX ================= -->
-<div id="lightbox" class="lightbox hidden">
-<button class="lightbox-close" onclick="closeLightbox()">×</button>
-<img id="lightboxImg" src="" alt="Photo agrandie">
-<p id="lightboxCaption" class="lightbox-caption"></p>
-<p id="lightboxCredit" class="lightbox-credit"></p>
-</div>
+<div id="lightbox" class="lightbox hidden"><button class="lightbox-close" onclick="closeLightbox()">×</button><img id="lightboxImg" src="" alt=""><p id="lightboxCaption" class="lightbox-caption"></p><p id="lightboxCredit" class="lightbox-credit"></p></div>
 
-<!-- ================= SCRIPTS (ordre strict) ================= -->
 <script src="js/data.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/search-v25.js"></script>
@@ -206,17 +181,9 @@
 <script src="js/app.js"></script>
 <script src="js/fiches-techniques.js"></script>
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('service-worker.js').then(function (r) { console.log('✅ SW enregistré', r.scope); }).catch(function (e) { console.error('❌ SW', e); });
-  });
-}
-(function () {
-  var d = false;
-  function h() { if (d) return; d = true; var s = document.getElementById('splash'); if (s) { s.classList.add('hidden'); setTimeout(function () { s.remove(); }, 700); } }
-  window.addEventListener('load', function () { setTimeout(h, 900); });
-  setTimeout(h, 5000);
-})();
+if ('serviceWorker' in navigator) window.addEventListener('load', function(){ navigator.serviceWorker.register('service-worker.js').then(function(r){console.log('✅ SW',r.scope);}).catch(function(e){console.error('❌ SW',e);}); });
+(function(){var d=false;function h(){if(d)return;d=true;var s=document.getElementById('splash');if(s){s.classList.add('hidden');setTimeout(function(){s.remove();},700);}}
+window.addEventListener('load',function(){setTimeout(h,900);});setTimeout(h,5000);})();
 </script>
 </body>
 </html>
