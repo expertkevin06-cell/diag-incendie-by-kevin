@@ -1,10 +1,10 @@
 // ================================================================
-// ETUDE INCENDIE BY KEVIN — engine.js v29
-// Accès tiers/admin FIABILISÉ (multi-hôtes ntfy + notif SW + diag)
-// + recherches + feed mensuel + moteur de MAJ SW
+// ETUDE INCENDIE BY KEVIN — engine.js v30
+// Recherche • Accès admin/tiers FIABLE (ntfy multi-hôtes + notif SW)
+// • Feed mensuel • Moteur MAJ SW • Connexion • Helpers injection
 // ================================================================
 function seNorm(s){return String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
-var SE_SYN={huile:['oil'],oil:['huile'],carburant:['fuel','essence','gazole'],fuel:['carburant'],fuite:['leak'],leak:['fuite'],batterie:['battery'],battery:['batterie'],court:['court-circuit','short','arc'],short:['court-circuit'],incendie:['fire','feu'],fire:['incendie'],faisceau:['harness'],harness:['faisceau'],fusible:['fuse'],fuse:['fusible'],embrasement:['runaway'],runaway:['embrasement'],perle:['bead'],bead:['perle'],echappement:['exhaust','collecteur'],catalyseur:['cata'],charge:['charging','ccs'],cosse:['borne','terminal']};
+var SE_SYN={huile:['oil'],oil:['huile'],carburant:['fuel','essence','gazole'],fuel:['carburant'],fuite:['leak'],leak:['fuite'],batterie:['battery'],battery:['batterie'],court:['court-circuit','short','arc'],short:['court-circuit'],incendie:['fire','feu'],fire:['incendie'],faisceau:['harness'],harness:['faisceau'],fusible:['fuse'],fuse:['fusible'],embrasement:['runaway'],runaway:['embrasement'],perle:['bead'],bead:['perle'],echappement:['exhaust','collecteur'],catalyseur:['cata'],charge:['charging','ccs'],cosse:['borne','terminal'],courroie:['belt'],belt:['courroie'],chain:['chaîne'],surchauffe:['overheat'],overheat:['surchauffe'],boite:['gearbox'],gearbox:['boîte'],turbo:['turbo'],egr:['egr'],fap:['dpf'],dpf:['fap'],adblue:['scr'],scr:['adblue'],gpl:['lpg'],lpg:['gpl'],adas:['camera'],camera:['adas'],autonomie:['range'],range:['autonomie']};
 function fuzzy16(t,q){var i=0;for(var j=0;j<t.length;j++){if(t[j]===q[i])i++;if(i>=q.length)return true;}return false;}
 function tmModel(rm,t){if(rm.indexOf(t)>=0)return true;var m=t.match(/^([a-z]{1,3})(\d{1,3})$/);if(m){var fw=rm.split(' ')[0]||'';if(fw.indexOf(m[1])===0&&rm.indexOf(m[2])>=0)return true;}if(t.length>=4&&fuzzy16(rm,t))return true;return false;}
 function seExpand(q){var t=seNorm(q).split(/[\s,;]+/).filter(Boolean);var out={};t.forEach(function(w){out[w]=1;(SE_SYN[w]||[]).forEach(function(s){out[seNorm(s)]=1;});});return Object.keys(out);}
@@ -45,9 +45,13 @@ async function registerPeriodicSync(){try{if(!('periodicSync' in navigator))retu
  var reg=await navigator.serviceWorker.ready;var p=await navigator.permissions.query({name:'periodic-background-sync'}).catch(function(){return{state:'denied'};});
  if(p.state!=='granted')return 'permission non accordée';
  await reg.periodicSync.register('monthly-recalls',{minInterval:MONTH_MS});return 'actif (30 j)';}catch(e){return 'erreur';}}
-// ================================================================
-// MOTEUR DE MISE À JOUR v28 (inchangé)
-// ================================================================
+// ---- Helper d'injection ordonnée (sections livrées par modules) ----
+function injectOrdered(sec,order){try{sec.setAttribute('data-inj-order',String(order));
+ var anchor=document.getElementById('section-overheat');if(!anchor)return;var parent=anchor.parentNode;
+ var nodes=parent.querySelectorAll('[data-inj-order]');var ref=null;
+ for(var i=0;i<nodes.length;i++){var o=parseInt(nodes[i].getAttribute('data-inj-order'),10);if(o>order){ref=nodes[i];break;}}
+ parent.insertBefore(sec,ref||anchor);}catch(e){console.warn('injectOrdered',e);}}
+// ---- Moteur de mise à jour SW ----
 var UPD={reloaded:false};
 function acSwUpdateLoop(){
  if(!('serviceWorker' in navigator))return;
@@ -59,7 +63,7 @@ function acSwUpdateLoop(){
   AC.banner('🔄 Nouvelle version détectée — rechargement…');
   setTimeout(function(){window.location.reload();},1200);});
  navigator.serviceWorker.addEventListener('message',function(e){
-  if(e.data&&e.data.type==='sw-activated')console.log('[v29] SW actif :',e.data.version);});}
+  if(e.data&&e.data.type==='sw-activated')console.log('[v30] SW actif :',e.data.version);});}
 async function manualUpdateCheck(){
  AC.banner('🔄 Vérification des mises à jour…');
  try{if('serviceWorker' in navigator){var reg=await navigator.serviceWorker.getRegistration();if(reg)await reg.update();if(reg&&reg.waiting)reg.waiting.postMessage('SKIP_WAITING');}}catch(e){}
@@ -72,7 +76,7 @@ async function manualUpdateCheck(){
   var st2=reg2&&reg2.installing?'installation':reg2&&reg2.waiting?'en attente (SKIP_WAITING envoyé)':'actif';
   AC.banner('📦 SW serveur : '+(m?m[1]:'?')+' • '+st2);}catch(e){AC.banner('⚠️ Vérification SW impossible');}}
 // ================================================================
-// CONTRÔLE D'ACCÈS v29 — multi-hôtes ntfy + notif SW + polling gate
+// CONTRÔLE D'ACCÈS v30 — multi-hôtes ntfy + notif SW + polling gate
 // ================================================================
 var AC={REQ_TOPIC:'etude-incendie-req-83600',DEC_TOPIC:'etude-incendie-dec-83600',UPD_TOPIC:'etude-incendie-upd-83600',
  HOSTS:['https://ntfy.sh','https://ntfy.zoey.dev','https://ntfy.tiepolog.ovh'],host:0,
@@ -84,7 +88,6 @@ function acHost(){return AC.HOSTS[AC.host%AC.HOSTS.length];}
 function acDevice(){var d=localStorage.getItem('acDevice');if(!d){d='dev-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);localStorage.setItem('acDevice',d);}return d;}
 function acIsAdminDevice(){return localStorage.getItem('acAdminDevice')==='1';}
 function acMarkAdminDevice(){localStorage.setItem('acAdminDevice','1');}
-// ---- Publication robuste (multi-hôtes + retry) ----
 async function acPub(topic,obj){obj=Object.assign({id:Math.random().toString(36).slice(2,10),ts:Date.now()},obj);
  var lastErr='';
  for(var i=0;i<AC.HOSTS.length;i++){var h=AC.HOSTS[(AC.host+i)%AC.HOSTS.length];
@@ -94,7 +97,6 @@ async function acPub(topic,obj){obj=Object.assign({id:Math.random().toString(36)
     lastErr='HTTP '+r.status;}catch(e){lastErr=e.message;}
    await new Promise(function(s){setTimeout(s,800);});}}
  AC.diag.pubKo++;AC.diag.lastOk=false;AC.diag.lastErr=lastErr;return false;}
-// ---- Lecture robuste ----
 async function acPoll(topic,since){var lastErr='';
  for(var i=0;i<AC.HOSTS.length;i++){var h=AC.HOSTS[(AC.host+i)%AC.HOSTS.length];
   try{var r=await fetch(h+'/'+topic+'/json?poll=1&since='+(since||'all'),{cache:'no-store'});
@@ -102,19 +104,18 @@ async function acPoll(topic,since){var lastErr='';
    lastErr='HTTP '+r.status;}catch(e){lastErr=e.message;}}
  AC.diag.lastOk=false;AC.diag.lastErr=lastErr;return [];}
 function acParse(ev){try{return JSON.parse(ev.message);}catch(e){return null;}}
-// ---- Notification via Service Worker (page masquée OK) ----
 function acNotify(title,body){AC.banner(title+' — '+body);
  try{
   if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){
    navigator.serviceWorker.getRegistration().then(function(reg){
-    if(reg&&reg.showNotification){reg.showNotification(title,{body:body,icon:'images/icon-192x192.png',tag:'ac-'+Date.now()});}
-    else if('Notification' in window&&Notification.permission==='granted')new Notification(title,{body:body});});
+    if(reg&&reg.showNotification){try{reg.showNotification(title,{body:body,icon:'images/icon-192x192.png',tag:'ac-'+Date.now()});}catch(e){}}
+    if(navigator.serviceWorker.controller){try{navigator.serviceWorker.controller.postMessage({type:'notify',title:title,body:body});}catch(e){}}
+    else if('Notification' in window&&Notification.permission==='granted'){try{new Notification(title,{body:body});}catch(e){}}});
    return;}
   if('Notification' in window&&Notification.permission==='granted')new Notification(title,{body:body});
  }catch(e){}}
 function acAskNotif(){try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();}catch(e){}}
 AC.banner=function(t){var b=document.getElementById('updateBanner');if(b){b.textContent=t;b.classList.add('show');setTimeout(function(){b.classList.remove('show');},9000);}};
-// ---- État ----
 function acGetGrant(){try{return JSON.parse(localStorage.getItem('acGrant')||'null');}catch(e){return null;}}
 function acSaveGrant(g){localStorage.setItem('acGrant',JSON.stringify(g));}
 function acClearGrant(){localStorage.removeItem('acGrant');}
@@ -128,7 +129,6 @@ function acLoad(){
  AC.state={role:'locked',name:''};return AC.state;}
 function acSave(){try{localStorage.setItem('acState',JSON.stringify(AC.state));}catch(e){}}
 function acUnlocked(){return !!(AC.state&&(AC.state.role==='admin'||AC.state.role==='granted'));}
-// ---- Demande tiers (retry + état visible) ----
 async function acRequest(name){if(!name||name.length<2){AC.banner('⚠️ Indiquez un nom ou prénom');return false;}
  AC._lastReq={name:name,device:acDevice()};
  var ok=await acPub(AC.REQ_TOPIC,{device:AC._lastReq.device,name:name,ua:(navigator.userAgent||'').slice(0,60)});
@@ -138,7 +138,6 @@ async function acRequest(name){if(!name||name.length<2){AC.banner('⚠️ Indiqu
  return ok;}
 async function acRetryRequest(){if(!AC._lastReq){try{var st=JSON.parse(localStorage.getItem('acState')||'null');if(st&&st.name)AC._lastReq={name:st.name,device:acDevice()};}catch(e){}}
  if(!AC._lastReq)return false;return acRequest(AC._lastReq.name);}
-// ---- Décisions (tiers) ----
 async function acCheckDecisions(){
  var since=AC.state&&AC.state.since?Math.floor(AC.state.since/1000)-120:'all';
  var evs=await acPoll(AC.DEC_TOPIC,since);AC.diag.decCount+=evs.length;
@@ -160,7 +159,6 @@ async function acBootVerify(){
  var revoked=evs.some(function(ev){var d=acParse(ev);return d&&d.device===grant.device&&d.status==='revoked'&&d.ts>=(grant.since||0);});
  if(revoked){acClearGrant();AC.state={role:'locked',name:''};acSave();acApplyGate();acNotify('⛔ Accès révoqué','Par l’administrateur');return false;}
  grant.lastVerify=Date.now();acSaveGrant(grant);AC.state.lastVerify=grant.lastVerify;return true;}
-// ---- Admin ----
 async function acAdminLogin(pw){
  if(AC._lastLogin&&Date.now()-AC._lastLogin<800)return AC.state.role==='admin';
  AC._lastLogin=Date.now();
@@ -197,7 +195,6 @@ async function acCheckUpdate(){if(AC.state&&AC.state.role==='admin')return;
  var cur=localStorage.getItem('acApprovedVersion')||'';if(last.version===cur)return;
  if(last.approvedForTiers){localStorage.setItem('acApprovedVersion',last.version);acNotify('🔄 MAJ v'+last.version,'Approuvée — rechargement…');setTimeout(function(){window.location.reload(true);},3000);}
  else acNotify('🔄 MAJ v'+last.version+' disponible','En attente validation admin');}
-// ---- Gate + diagnostic ----
 function acApplyGate(){var g=document.getElementById('gateOverlay');if(!g)return;
  if(AC.state.role==='admin'||AC.state.role==='granted'){g.style.display='none';document.body.classList.remove('locked');
   var ap=document.getElementById('adminPanel');if(ap)ap.style.display=(AC.state.role==='admin')?'block':'none';
@@ -222,7 +219,6 @@ function acWireGate(){if(window.__gateWired)return;window.__gateWired=1;
  if(rr)rr.addEventListener('click',function(){acRetryRequest();});
  var e=document.getElementById('gatePwd');
  if(e)e.addEventListener('keypress',function(ev){if(ev.key==='Enter'){ev.preventDefault();var bb=document.getElementById('gateAdminBtn');if(bb)bb.click();}});}
-// ---- Boucle unique : admin (même au gate) + tiers ----
 async function acTick(){if(!navigator.onLine)return;
  var role=AC.state?AC.state.role:'locked';
  if(role==='admin'||acIsAdminDevice()){try{await acAdminRefresh();}catch(e){}}
@@ -240,14 +236,14 @@ var GEMINI_API_KEY='VOTRE_CLE_API_GEMINI';
 async function geminiSearch(query){var ctx='MÉTAUX : '+FIRE_DATABASE.metals.map(function(m){return m.name+' '+m.meltingPointC+'°C';}).join(', ')+' | CAS : '+RECALLS.slice(-15).map(function(r){return r.brand+' '+r.cause;}).join(' ; ');
  var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_API_KEY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'Expert incendie véhicule/bâtiment. CONTEXTE : '+ctx+'\nQUESTION : '+query+'\nRéponds en français technique.'}]}]})});
  if(!r.ok)throw new Error('API '+r.status);var d=await r.json();return d.candidates[0].content.parts[0].text;}
+function acInjectNotesSafe(){var card=document.querySelector('.gate-card');if(!card||card.dataset.v30)return;card.dataset.v30='1';
+ var b=document.getElementById('gateAdminBtn');
+ if(b){var n1=document.createElement('p');n1.style.cssText='font-size:.75rem;opacity:.85;margin-top:.4rem';n1.textContent='⚠️ Mot de passe exigé à CHAQUE ouverture.';b.parentNode.insertBefore(n1,b.nextSibling);}
+ var q=document.getElementById('gateReqBtn');
+ if(q){var n2=document.createElement('p');n2.style.cssText='font-size:.75rem;opacity:.85;margin-top:.4rem';n2.textContent='🔐 Tiers : validation admin + notif directe + révocation.';q.parentNode.insertBefore(n2,q.nextSibling);}}
 document.addEventListener('DOMContentLoaded',function(){acLoad();acInjectNotesSafe();acWireGate();acApplyGate();
  acBootVerify().then(function(ok){if(ok)acApplyGate();});
  acStartPolling();acNetWatch();acSwUpdateLoop();
  if(acIsAdminDevice())acAskNotif();
  var mb=document.getElementById('manualUpdateBtn');if(mb)mb.addEventListener('click',function(){manualUpdateCheck();});
- console.log('✅ engine v29 : canal tiers/admin fiabilisé (multi-hôtes + notif SW + polling gate)');});
-function acInjectNotesSafe(){var card=document.querySelector('.gate-card');if(!card||card.dataset.v29)return;card.dataset.v29='1';
- var b=document.getElementById('gateAdminBtn');
- if(b){var n1=document.createElement('p');n1.style.cssText='font-size:.75rem;opacity:.85;margin-top:.4rem';n1.textContent='⚠️ Mot de passe exigé à CHAQUE ouverture.';b.parentNode.insertBefore(n1,b.nextSibling);}
- var q=document.getElementById('gateReqBtn');
- if(q){var n2=document.createElement('p');n2.style.cssText='font-size:.75rem;opacity:.85;margin-top:.4rem';n2.textContent='🔐 Tiers : validation admin + notif directe + révocation.';q.parentNode.insertBefore(n2,q.nextSibling);}}
+ console.log('✅ engine v30 : canal tiers/admin fiable + moteur MAJ + injection ordonnée');});
